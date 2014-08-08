@@ -11,19 +11,13 @@ import (
 )
 
 type Parser interface {
-	Run()
-}
-
-var DB gorm.DB
-
-func init() {
-	DB = models.New()
+	Run(DB gorm.DB)
 }
 
 type SaveDeputiesFromSearch struct {
 }
 
-func (p SaveDeputiesFromSearch) Run() {
+func (p SaveDeputiesFromSearch) Run(DB gorm.DB) {
 	searchURL := "http://www2.camara.leg.br/deputados/pesquisa"
 
 	var doc *goquery.Document
@@ -55,9 +49,11 @@ func (p SaveDeputiesFromSearch) Run() {
 	})
 }
 
+// ---
+
 type SaveDeputiesFromXML struct{}
 
-func (p SaveDeputiesFromXML) Run() {
+func (p SaveDeputiesFromXML) Run(DB gorm.DB) {
 	xmlURL := "http://www.camara.gov.br/SitCamaraWS/Deputados.asmx/ObterDeputados"
 
 	var doc *goquery.Document
@@ -89,3 +85,5 @@ func (p SaveDeputiesFromXML) Run() {
 		}).FirstOrCreate(&models.Parliamentarian{})
 	})
 }
+
+// ---

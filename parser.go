@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/camarabook/camarabook-api/models"
 	. "github.com/camarabook/camarabook-data/parser"
+	"github.com/jinzhu/gorm"
 )
 
 var usage = `Usage: camarabook-data <parsers>...
@@ -20,6 +22,8 @@ var mapp = map[string]Parser{
 	"--save-deputies-from-xml":    SaveDeputiesFromXML{},
 }
 
+var DB gorm.DB
+
 func main() {
 	if len(os.Args) == 2 && (os.Args[1] == "-h" || os.Args[1] == "--help") {
 		fmt.Println(usage)
@@ -30,6 +34,8 @@ func main() {
 		fmt.Println(usage)
 	}
 
+	DB = models.New()
+
 	parsers := os.Args[1:]
 
 	for i, _ := range parsers {
@@ -38,5 +44,5 @@ func main() {
 }
 
 func Run(p Parser) {
-	p.Run()
+	p.Run(DB)
 }
