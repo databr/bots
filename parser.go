@@ -20,6 +20,7 @@ Available parsers:
 var mapp = map[string]Parser{
 	"--save-deputies-from-search": SaveDeputiesFromSearch{},
 	"--save-deputies-from-xml":    SaveDeputiesFromXML{},
+	"--save-deputies-about":       SaveDeputiesAbout{},
 }
 
 var DB gorm.DB
