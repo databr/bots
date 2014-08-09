@@ -40,6 +40,7 @@ func (p SaveDeputiesFromXML) Run(DB gorm.DB) {
 			RegisterId: int64(registerID),
 			RealName:   s.Find("nome").First().Text(),
 			State:      s.Find("uf").First().Text(),
+			ImageUrl:   s.Find("urlFoto").First().Text(),
 		}).FirstOrCreate(&models.Parliamentarian{})
 	})
 }
