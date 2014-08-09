@@ -1,6 +1,7 @@
 ## Install
 
 ``` bash
+$ export DATABASE_URL=”postgres://user@localhost/camarabook?sslmode=disable”
 $ go get github.com/camarabook/camarabook-data
 $ camarabook-data-h
 ```
@@ -24,9 +25,9 @@ Available parsers:
 
 ## Development
 
-## Install
+### Install
 
-``` go
+``` bash
 $ go get github.com/camarabook/camarabook-data
 $ cd $GOPATH/src/github.com/camarabook/camarabook-data
 $ make
