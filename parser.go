@@ -13,8 +13,9 @@ var usage = `Usage: camarabook-data <parsers>...
 
 Available parsers:
 
-    --save-deputies-from-search  Save deputies from oficial site search
-    --save-deputies-from-xml     Save deputies from oficial site xml
+    --save-deputies-from-search  Save deputies from official site search
+    --save-deputies-from-xml     Save deputies from official site xml
+    --save-deputies-about        Save deputies about information from official site
 `
 
 var mapp = map[string]Parser{
