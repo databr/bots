@@ -8,9 +8,11 @@ no_targets__:
 camarabook-data:
 	go build
 
-all: camarabook-data deputies_from_search deputies_from_xml deputies_about
+all: deputies
 	echo "Finished"
 	make clean
+
+deputies: deputies_from_search deputies_from_xml deputies_about
 
 deputies_from_search: camarabook-data
 	./camarabook-data --save-deputies-from-search
@@ -21,7 +23,9 @@ deputies_from_xml: camarabook-data
 deputies_about: camarabook-data
 	./camarabook-data --save-deputies-about
 
+deputies_quotas: camarabook-data
+	./camarabook-data --save-deputies-quotas
+
 clean:
 	rm -Rf ./camarabook-data
-
 
