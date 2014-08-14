@@ -3,6 +3,7 @@ package parser
 import (
 	"log"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/camarabook/camarabook-api/models"
@@ -28,26 +29,45 @@ func (p SaveDeputiesFromXML) Run(DB models.Database) {
 	}
 
 	doc.Find("deputado").Each(func(i int, s *goquery.Selection) {
+		partyId := toPtr(models.MakeUri(s.Find("partido").First().Text()))
+		DB.Upsert(bson.M{"id": partyId}, bson.M{
+			"$setOnInsert": bson.M{
+				"createdat": time.Now(),
+			},
+			"$currentDate": bson.M{
+				"updatedat": true,
+			},
+			"$set": bson.M{
+				"id":             partyId,
+				"classification": toPtr("party"),
+			},
+		}, &models.Party{})
+
+		//PartyId:    party.Id,
+		//State:      s.Find("uf").First().Text(),
+
 		name := strings.Title(strings.ToLower(s.Find("nomeparlamentar").First().Text()))
-
-		p := models.Parliamentarian{}
-		p.Name = &name
-		p.SortName = &name
-		p.Id = toPtr(models.MakeUri(name))
-		p.Gender = toPtr(s.Find("sexo").First().Text())
-		p.Image = toPtr(s.Find("urlFoto").First().Text())
-		p.Email = toPtr(s.Find("email").First().Text())
-
+		email := toPtr(s.Find("email").First().Text())
 		q := bson.M{
-			"email": p.Email,
+			"email": email,
 		}
-		DB.Upsert(q, &p)
-
 		fullName := strings.Split(titlelize(s.Find("nome").First().Text()), " ")
 
-		DB.Update(q, bson.M{
+		DB.Upsert(q, bson.M{
+			"$setOnInsert": bson.M{
+				"createdat": time.Now(),
+			},
+			"$currentDate": bson.M{
+				"updatedat": true,
+			},
 			"$set": bson.M{
-				"sources": []popolo.Source{source},
+				"name":     &name,
+				"sortname": &name,
+				"id":       toPtr(models.MakeUri(name)),
+				"gender":   toPtr(s.Find("sexo").First().Text()),
+				"image":    toPtr(s.Find("urlFoto").First().Text()),
+				"email":    email,
+				"sources":  []popolo.Source{source},
 				"identifiers": []popolo.Identifier{
 					{Identifier: toPtr(s.Find("idParlamentar").First().Text()), Scheme: toPtr("idParlamentar")},
 					{Identifier: toPtr(s.Find("ideCadastro").First().Text()), Scheme: toPtr("ideCadastro")},
@@ -75,7 +95,7 @@ func (p SaveDeputiesFromXML) Run(DB models.Database) {
 					},
 				},
 			},
-		}, &p)
+		}, &models.Parliamentarian{})
 	})
 }
 
