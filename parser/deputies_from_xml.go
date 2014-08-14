@@ -46,14 +46,13 @@ func (p SaveDeputiesFromXML) Run(DB models.Database) {
 		//PartyId:    party.Id,
 		//State:      s.Find("uf").First().Text(),
 
-		name := strings.Title(strings.ToLower(s.Find("nomeparlamentar").First().Text()))
-		email := toPtr(s.Find("email").First().Text())
+		name := titlelize(s.Find("nomeparlamentar").First().Text())
 		q := bson.M{
-			"email": email,
+			"id": models.MakeUri(name),
 		}
 		fullName := strings.Split(titlelize(s.Find("nome").First().Text()), " ")
 
-		DB.Upsert(q, bson.M{
+		_, err := DB.Upsert(q, bson.M{
 			"$setOnInsert": bson.M{
 				"createdat": time.Now(),
 			},
@@ -66,36 +65,42 @@ func (p SaveDeputiesFromXML) Run(DB models.Database) {
 				"id":       toPtr(models.MakeUri(name)),
 				"gender":   toPtr(s.Find("sexo").First().Text()),
 				"image":    toPtr(s.Find("urlFoto").First().Text()),
-				"email":    email,
-				"sources":  []popolo.Source{source},
-				"identifiers": []popolo.Identifier{
-					{Identifier: toPtr(s.Find("idParlamentar").First().Text()), Scheme: toPtr("idParlamentar")},
-					{Identifier: toPtr(s.Find("ideCadastro").First().Text()), Scheme: toPtr("ideCadastro")},
-				},
-				"othernames": []popolo.OtherNames{
-					{
-						Name:       toPtr(titlelize(s.Find("nome").First().Text())),
-						FamilyName: toPtr(fullName[len(fullName)-1:][0]),
-						GivenName:  &fullName[0],
-						Note:       toPtr("Nome de nascimento"),
+				"email":    toPtr(s.Find("email").First().Text()),
+			},
+			"$addToSet": bson.M{
+				"sources": source,
+				"identifiers": bson.M{
+					"$each": []popolo.Identifier{
+						{Identifier: toPtr(s.Find("idParlamentar").First().Text()), Scheme: toPtr("idParlamentar")},
+						{Identifier: toPtr(s.Find("ideCadastro").First().Text()), Scheme: toPtr("ideCadastro")},
 					},
 				},
-				"contactdetails": []popolo.ContactDetail{
-					{
-						Label:   toPtr("Telefone"),
-						Type:    toPtr("phone"),
-						Value:   toPtr(s.Find("fone").First().Text()),
-						Sources: []popolo.Source{source},
-					},
-					{
-						Label:   toPtr("Gabinete"),
-						Type:    toPtr("address"),
-						Value:   toPtr(s.Find("gabinete").First().Text() + ", Anexo " + s.Find("anexo").First().Text()),
-						Sources: []popolo.Source{source},
+				"othernames": popolo.OtherNames{
+					Name:       toPtr(titlelize(s.Find("nome").First().Text())),
+					FamilyName: toPtr(fullName[len(fullName)-1:][0]),
+					GivenName:  &fullName[0],
+					Note:       toPtr("Nome de nascimento"),
+				},
+				"contactdetails": bson.M{
+					"$each": []popolo.ContactDetail{
+						{
+							Label:   toPtr("Telefone"),
+							Type:    toPtr("phone"),
+							Value:   toPtr(s.Find("fone").First().Text()),
+							Sources: []popolo.Source{source},
+						},
+						{
+							Label:   toPtr("Gabinete"),
+							Type:    toPtr("address"),
+							Value:   toPtr(s.Find("gabinete").First().Text() + ", Anexo " + s.Find("anexo").First().Text()),
+							Sources: []popolo.Source{source},
+						},
 					},
 				},
 			},
 		}, &models.Parliamentarian{})
+		checkError(err)
+
 	})
 }
 
