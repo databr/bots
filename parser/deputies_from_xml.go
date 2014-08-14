@@ -2,17 +2,23 @@ package parser
 
 import (
 	"log"
-	"strconv"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/camarabook/camarabook-api/models"
-	"github.com/jinzhu/gorm"
+	"github.com/camarabook/go-popolo"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type SaveDeputiesFromXML struct{}
 
-func (p SaveDeputiesFromXML) Run(DB gorm.DB) {
+func (p SaveDeputiesFromXML) Run(DB models.Database) {
 	xmlURL := "http://www.camara.gov.br/SitCamaraWS/Deputados.asmx/ObterDeputados"
+
+	source := popolo.Source{
+		Url:  toPtr(xmlURL),
+		Note: toPtr("Câmara API"),
+	}
 
 	var doc *goquery.Document
 	var e error
@@ -22,25 +28,47 @@ func (p SaveDeputiesFromXML) Run(DB gorm.DB) {
 	}
 
 	doc.Find("deputado").Each(func(i int, s *goquery.Selection) {
-		govID, _ := strconv.Atoi(s.Find("idParlamentar").First().Text())
-		registerID, _ := strconv.Atoi(s.Find("ideCadastro").First().Text())
+		name := strings.Title(strings.ToLower(s.Find("nomeparlamentar").First().Text()))
 
-		var party models.Party
-		DB.Where(models.Party{Title: s.Find("partido").First().Text()}).FirstOrCreate(&party)
+		p := models.Parliamentarian{}
+		p.Name = &name
+		p.SortName = &name
+		p.Id = toPtr(models.MakeUri(name))
+		p.Gender = toPtr(s.Find("sexo").First().Text())
+		p.Image = toPtr(s.Find("urlFoto").First().Text())
+		p.Email = toPtr(s.Find("email").First().Text())
 
-		DB.Where(models.Parliamentarian{
-			GovId: int64(govID),
-		}).Assign(models.Parliamentarian{
-			Name:       s.Find("nomeparlamentar").First().Text(),
-			PartyId:    party.Id,
-			GovId:      int64(govID),
-			Gender:     s.Find("sexo").First().Text(),
-			Phone:      s.Find("fone").First().Text(),
-			Email:      s.Find("email").First().Text(),
-			RegisterId: int64(registerID),
-			RealName:   s.Find("nome").First().Text(),
-			State:      s.Find("uf").First().Text(),
-			ImageUrl:   s.Find("urlFoto").First().Text(),
-		}).FirstOrCreate(&models.Parliamentarian{})
+		q := bson.M{
+			"email": p.Email,
+		}
+		DB.Upsert(q, &p)
+
+		fullName := strings.Split(titlelize(s.Find("nome").First().Text()), " ")
+
+		DB.Update(q, bson.M{
+			"$set": bson.M{
+				"sources": []popolo.Source{source},
+				"identifiers": []popolo.Identifier{
+					{Identifier: toPtr(s.Find("idParlamentar").First().Text()), Scheme: toPtr("idParlamentar")},
+					{Identifier: toPtr(s.Find("ideCadastro").First().Text()), Scheme: toPtr("ideCadastro")},
+				},
+				"othernames": []popolo.OtherNames{
+					{
+						Name:       toPtr(titlelize(s.Find("nome").First().Text())),
+						FamilyName: toPtr(fullName[len(fullName)-1:][0]),
+						GivenName:  &fullName[0],
+						Note:       toPtr("Nome de nascimento"),
+					},
+				},
+			},
+		}, &p)
 	})
+}
+
+func titlelize(s string) string {
+	return strings.Title(strings.ToLower(s))
+}
+
+func toPtr(s string) *string {
+	return &s
 }
