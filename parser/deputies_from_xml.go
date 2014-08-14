@@ -60,6 +60,20 @@ func (p SaveDeputiesFromXML) Run(DB models.Database) {
 						Note:       toPtr("Nome de nascimento"),
 					},
 				},
+				"contactdetails": []popolo.ContactDetail{
+					{
+						Label:   toPtr("Telefone"),
+						Type:    toPtr("phone"),
+						Value:   toPtr(s.Find("fone").First().Text()),
+						Sources: []popolo.Source{source},
+					},
+					{
+						Label:   toPtr("Gabinete"),
+						Type:    toPtr("address"),
+						Value:   toPtr(s.Find("gabinete").First().Text() + ", Anexo " + s.Find("anexo").First().Text()),
+						Sources: []popolo.Source{source},
+					},
+				},
 			},
 		}, &p)
 	})
