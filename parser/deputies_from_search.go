@@ -2,9 +2,13 @@ package parser
 
 import (
 	"log"
+	"regexp"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/camarabook/camarabook-api/models"
+	"github.com/camarabook/go-popolo"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type SaveDeputiesFromSearch struct {
@@ -20,24 +24,36 @@ func (p SaveDeputiesFromSearch) Run(DB models.Database) {
 		log.Fatal(e)
 	}
 
+	source := popolo.Source{
+		Url:  toPtr(searchURL),
+		Note: toPtr("Pesquisa Câmara"),
+	}
+
 	doc.Find("#deputado option").Each(func(i int, s *goquery.Selection) {
 		value, _ := s.Attr("value")
 		if value != "" {
 			info := regexp.MustCompile("=|%23|!|\\||\\?").Split(value, -1)
 
-			var party models.Party
-			DB.Where(models.Party{Title: info[4]}).FirstOrCreate(&party)
+			name := titlelize(info[0])
+			q := bson.M{
+				"id": models.MakeUri(name),
+			}
 
-			RegisterID, _ := strconv.Atoi(info[5])
-
-			DB.Where(models.Parliamentarian{
-				RegisterId: int64(RegisterID),
-			}).Assign(models.Parliamentarian{
-				Name:       info[0],
-				PartyId:    party.Id,
-				State:      info[3],
-				RegisterId: int64(RegisterID),
-			}).FirstOrCreate(&models.Parliamentarian{})
+			_, err := DB.Upsert(q, bson.M{
+				"$setOnInsert": bson.M{
+					"createdat": time.Now(),
+				},
+				"$currentDate": bson.M{
+					"updatedat": true,
+				},
+				"$addToSet": bson.M{
+					"sources": source,
+					"identifiers": popolo.Identifier{
+						Identifier: toPtr(info[2]), Scheme: toPtr("nMatricula"),
+					},
+				},
+			}, models.Parliamentarian{})
+			checkError(err)
 		}
 	})
 }
