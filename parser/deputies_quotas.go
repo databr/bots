@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/jinzhu/gorm"
+	"github.com/camarabook/camarabook-api/models"
 )
 
 const (
@@ -17,7 +17,7 @@ const (
 type SaveDeputiesQuotas struct {
 }
 
-func (p SaveDeputiesQuotas) Run(DB gorm.DB) {
+func (p SaveDeputiesQuotas) Run(DB models.Database) {
 	doc, err := goquery.NewDocument("http://www.camara.gov.br/cota-parlamentar/pg-cota-lista-deputados.jsp")
 	if err != nil {
 		log.Println("Problems base")

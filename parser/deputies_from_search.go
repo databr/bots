@@ -2,18 +2,15 @@ package parser
 
 import (
 	"log"
-	"regexp"
-	"strconv"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/camarabook/camarabook-api/models"
-	"github.com/jinzhu/gorm"
 )
 
 type SaveDeputiesFromSearch struct {
 }
 
-func (p SaveDeputiesFromSearch) Run(DB gorm.DB) {
+func (p SaveDeputiesFromSearch) Run(DB models.Database) {
 	searchURL := "http://www2.camara.leg.br/deputados/pesquisa"
 
 	var doc *goquery.Document

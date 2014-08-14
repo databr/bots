@@ -1,21 +1,11 @@
 package parser
 
-import (
-	"crypto/md5"
-	"encoding/hex"
-	"log"
-	"strconv"
-	"strings"
-
-	"github.com/PuerkitoBio/goquery"
-	"github.com/camarabook/camarabook-api/models"
-	"github.com/jinzhu/gorm"
-)
+import "github.com/camarabook/camarabook-api/models"
 
 type SaveDeputiesAbout struct {
 }
 
-func (p SaveDeputiesAbout) Run(DB gorm.DB) {
+func (p SaveDeputiesAbout) Run(DB models.Database) {
 	var ds []models.Parliamentarian
 
 	DB.Find(&ds)

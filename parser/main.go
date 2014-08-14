@@ -1,7 +1,7 @@
 package parser
 
-import "github.com/jinzhu/gorm"
+import "github.com/camarabook/camarabook-api/models"
 
 type Parser interface {
-	Run(DB gorm.DB)
+	Run(DB models.Database)
 }

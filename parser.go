@@ -6,7 +6,6 @@ import (
 
 	"github.com/camarabook/camarabook-api/models"
 	. "github.com/camarabook/camarabook-data/parser"
-	"github.com/jinzhu/gorm"
 )
 
 var usage = `Usage: camarabook-data <parsers>...
@@ -26,7 +25,7 @@ var mapp = map[string]Parser{
 	"--save-deputies-quotas":      SaveDeputiesQuotas{},
 }
 
-var DB gorm.DB
+var DB models.Database
 
 func main() {
 	if len(os.Args) == 2 && (os.Args[1] == "-h" || os.Args[1] == "--help") {
