@@ -7,7 +7,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/camarabook/camarabook-api/models"
-	"github.com/camarabook/go-popolo"
+	. "github.com/camarabook/go-popolo"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -22,7 +22,7 @@ func (p SaveDeputiesAbout) Run(DB models.Database) {
 	for _, d := range ds {
 		id := getIdDeputado(d.Identifiers)
 		bioURL := "http://www2.camara.leg.br/deputados/pesquisa/layouts_deputados_biografia?pk=" + id
-		source := popolo.Source{
+		source := Source{
 			Url:  toPtr(bioURL),
 			Note: toPtr("Pesquisa Câmara"),
 		}
@@ -70,7 +70,7 @@ func (p SaveDeputiesAbout) Run(DB models.Database) {
 	}
 }
 
-func getIdDeputado(ids []popolo.Identifier) string {
+func getIdDeputado(ids []Identifier) string {
 	for _, id := range ids {
 		if *id.Scheme == "ideCadastro" {
 			return *id.Identifier

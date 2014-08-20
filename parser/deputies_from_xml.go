@@ -100,7 +100,6 @@ func (p SaveDeputiesFromXML) Run(DB models.Database) {
 			},
 		}, &models.Parliamentarian{})
 		checkError(err)
-
 	})
 }
 

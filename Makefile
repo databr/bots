@@ -12,7 +12,7 @@ all: deputies
 	echo "Finished"
 	make clean
 
-deputies: deputies_from_search deputies_from_xml deputies_about
+deputies: deputies_from_search deputies_from_xml deputies_about deputies_quotas
 
 deputies_from_search: camarabook-data
 	./camarabook-data --save-deputies-from-search
