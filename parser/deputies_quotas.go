@@ -2,11 +2,14 @@ package parser
 
 import (
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/camarabook/camarabook-api/models"
+	"gopkg.in/mgo.v2/bson"
 )
 
 const (
@@ -14,23 +17,34 @@ const (
 	QUOATAANALITICOURL = "http://www.camara.gov.br/cota-parlamentar/cota-analitico?nuDeputadoId=ID&numMes=MONTH&numAno=YEAR&numSubCota="
 )
 
+var CACHE *memcache.Client
+
+func init() {
+	CACHE = memcache.New("dev:11211")
+}
+
 type SaveDeputiesQuotas struct {
 }
 
 func (p SaveDeputiesQuotas) Run(DB models.Database) {
 	doc, err := goquery.NewDocument("http://www.camara.gov.br/cota-parlamentar/pg-cota-lista-deputados.jsp")
 	if err != nil {
-		log.Println("Problems base")
+		panic(err)
 		return
 	}
 
 	doc.Find("#content ul li a").Each(func(_ int, s *goquery.Selection) {
 		url, _ := s.Attr("href")
-		getPages(CAMARABASEURL + url)
+		name_party := strings.Split(s.Text(), "-")
+		name := strings.TrimSpace(name_party[0])
+		id := models.MakeUri(name)
+		if !strings.Contains(id, "lideranca") {
+			getPages(CAMARABASEURL+url, id, DB)
+		}
 	})
 }
 
-func getPages(url string) {
+func getPages(url, id string, DB models.Database) {
 	doc, err := goquery.NewDocument(url)
 	if err != nil {
 		log.Println("Problems", url)
@@ -43,23 +57,33 @@ func getPages(url string) {
 		monthYear, ok := s.Attr("value")
 		if ok {
 			dateData := strings.Split(monthYear, "-")
-			fullQuotasUrl := QUOATAANALITICOURL
-			fullQuotasUrl = strings.Replace(fullQuotasUrl, "MONTH", dateData[0], -1)
-			fullQuotasUrl = strings.Replace(fullQuotasUrl, "YEAR", dateData[1], -1)
-			fullQuotasUrl = strings.Replace(fullQuotasUrl, "ID", _id[1], -1)
-			getQuotaPage(fullQuotasUrl)
+			if dateData[1] == "2014" {
+				fullQuotasUrl := QUOATAANALITICOURL
+				fullQuotasUrl = strings.Replace(fullQuotasUrl, "MONTH", dateData[0], -1)
+				fullQuotasUrl = strings.Replace(fullQuotasUrl, "YEAR", dateData[1], -1)
+				fullQuotasUrl = strings.Replace(fullQuotasUrl, "ID", _id[1], -1)
+				getQuotaPage(id, fullQuotasUrl, DB)
+			}
 		}
 	})
 }
 
-func getQuotaPage(url string) {
-	<-time.After(5 * time.Second)
-	log.Println("aaaa, ", url)
+func getQuotaPage(id, url string, DB models.Database) {
+	<-time.After(2 * time.Second)
 	doc, err := goquery.NewDocument(url)
 	if err != nil {
-		log.Println("Problems", url)
+		LLog.Error(err, url)
 		return
 	}
+
+	it, err := CACHE.Get(url)
+
+	LLog.Log(it, err)
+
+	var p models.Parliamentarian
+	DB.FindOne(bson.M{
+		"id": id,
+	}, &p)
 
 	doc.Find(".espacoPadraoInferior2 tr:not(.celulasCentralizadas)").Each(func(i int, s *goquery.Selection) {
 		data := s.Find("td")
@@ -70,21 +94,59 @@ func getQuotaPage(url string) {
 		}
 		suplier := data.Eq(1).Text()
 		orderN := strings.TrimSpace(data.Eq(2).Text())
+		companyUri := models.MakeUri(suplier)
+
+		if cnpj == "" {
+			cnpj = companyUri
+		}
+
+		_, err := DB.Upsert(bson.M{"id": cnpj}, bson.M{
+			"$set": bson.M{
+				"name": suplier,
+				"uri":  companyUri,
+			},
+		}, models.Company{})
+		checkError(err)
 
 		switch len(data.Nodes) {
 		case 4:
-			value := data.Eq(3).Text()
-			log.Println("normal:", cnpj, "|", suplier, "|", orderN, value)
+			// value :=  data.Eq(3).Text()
+			// log.Println("normal:", cnpj, "|", suplier, "|", orderN, value)
+			// log.Println("skip")
 		case 7:
-			date := data.Eq(3).Text()
-			passenger := data.Eq(4).Text()
-			path := data.Eq(5).Text()
-			value := data.Eq(6).Text()
-			log.Println("aereo:", cnpj, "|", suplier, "|", orderN, "|", date, "|", passenger, "|", path, "|", value)
+			sendedAt, _ := time.Parse("2006-01-02", strings.Split(data.Eq(3).Text(), " ")[0])
+			value := strings.Replace(data.Eq(6).Text(), "R$", "", -1)
+			value = strings.Replace(value, ".", "", -1)
+			value = strings.Replace(value, "-", "", -1)
+			value = strings.TrimSpace(strings.Replace(value, ",", ".", -1))
+			valueF, _ := strconv.ParseFloat(value, 64)
+
+			LLog.Log(orderN)
+			ticket := strings.TrimSpace(strings.Split(orderN, ":")[1])
+
+			LLog.Debug(*p.Id)
+
+			if valueF < 1 {
+				panic(value + ": " + url)
+			}
+			_, err = DB.Upsert(bson.M{"order": orderN, "parliamentarian": p.Id}, bson.M{
+				"$set": bson.M{
+					"company":        cnpj,
+					"date":           sendedAt,
+					"passenger_name": data.Eq(4).Text(),
+					"route":          data.Eq(5).Text(),
+					"value":          valueF,
+					"ticket":         ticket,
+				},
+			}, models.Quota{})
+			checkError(err)
+
 		default:
-			log.Println("outro:", data.Text())
+			panic(data.Text())
 		}
 	})
+
+	CACHE.Set(&memcache.Item{Key: url, Value: []byte("true")})
 }
 
 func checkError(err error) {
