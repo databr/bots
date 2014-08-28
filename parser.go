@@ -17,7 +17,6 @@ Available parsers:
     --save-deputies-about        Save deputies about information from official site
     --save-deputies-quotas
     --save-deputies-info-from-transparencia-brasil
-
 `
 
 var mapp = map[string]Parser{

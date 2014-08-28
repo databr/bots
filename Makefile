@@ -32,4 +32,9 @@ deputies_info_from_transparencia_brasil: camarabook-data
 
 clean:
 	rm -Rf ./camarabook-data
+	rm -Rf pkg/*
 
+build_all: clean pkg/camarabook-linux-amd64:
+
+pkg/camarabook-linux-amd64:
+	GOOS=linux GOARCH=amd64 go build -o pkg/camarabook-linux-amd64
