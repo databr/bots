@@ -122,7 +122,14 @@ func getQuotaPage(id, url string, DB models.Database) {
 			valueF, _ := strconv.ParseFloat(value, 64)
 
 			LLog.Log(orderN)
-			ticket := strings.TrimSpace(strings.Split(orderN, ":")[1])
+
+			orderNS := strings.Split(orderN, ":")
+			var ticket string
+			if len(orderN) == 1 {
+				ticket = strings.TrimSpace(orderNS[0])
+			} else {
+				ticket = strings.TrimSpace(orderNS[1])
+			}
 
 			LLog.Debug(*p.Id)
 
