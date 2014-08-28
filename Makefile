@@ -6,6 +6,7 @@ help:
 no_targets__:
 
 camarabook-data:
+	go get
 	go build
 
 all: deputies
@@ -25,6 +26,9 @@ deputies_about: camarabook-data
 
 deputies_quotas: camarabook-data
 	./camarabook-data --save-deputies-quotas
+
+deputies_info_from_transparencia_brasil: camarabook-data
+	./camarabook-data --save-deputies-info-from-transparencia-brasil
 
 clean:
 	rm -Rf ./camarabook-data

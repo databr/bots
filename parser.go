@@ -16,13 +16,16 @@ Available parsers:
     --save-deputies-from-xml     Save deputies from official site xml
     --save-deputies-about        Save deputies about information from official site
     --save-deputies-quotas
+    --save-deputies-info-from-transparencia-brasil
+
 `
 
 var mapp = map[string]Parser{
-	"--save-deputies-from-search": SaveDeputiesFromSearch{},
-	"--save-deputies-from-xml":    SaveDeputiesFromXML{},
-	"--save-deputies-about":       SaveDeputiesAbout{},
-	"--save-deputies-quotas":      SaveDeputiesQuotas{},
+	"--save-deputies-from-search":                    SaveDeputiesFromSearch{},
+	"--save-deputies-from-xml":                       SaveDeputiesFromXML{},
+	"--save-deputies-about":                          SaveDeputiesAbout{},
+	"--save-deputies-quotas":                         SaveDeputiesQuotas{},
+	"--save-deputies-info-from-transparencia-brasil": SaveDeputiesFromTransparenciaBrasil{},
 }
 
 var DB models.Database
