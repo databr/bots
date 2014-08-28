@@ -61,6 +61,7 @@ func (p SaveDeputiesAbout) Run(DB models.Database) {
 			"$set": bson.M{
 				"summary":   bio.Eq(0).Find(".bioOutrosTexto").Text(),
 				"biography": strings.Join(biographyItems, "\n"),
+				"link":      "http://www.camara.gov.br/internet/Deputado/dep_Detalhe.asp?id=" + id,
 			},
 			"$addToSet": bson.M{
 				"sources": source,
