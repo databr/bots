@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"strconv"
 	"strings"
 	"time"
 
@@ -19,7 +20,11 @@ func (p SaveDeputiesAbout) Run(DB models.Database) {
 	DB.FindAll(&ds)
 
 	for _, d := range ds {
-		id := getIdDeputado(d.Identifiers)
+		id, ok := getIdDeputado(d.Identifiers)
+		if !ok {
+			continue
+		}
+
 		bioURL := "http://www2.camara.leg.br/deputados/pesquisa/layouts_deputados_biografia?pk=" + id
 		source := Source{
 			Url:  toPtr(bioURL),
@@ -50,6 +55,33 @@ func (p SaveDeputiesAbout) Run(DB models.Database) {
 			}
 		})
 
+		bioDetails := doc.Find("#bioDeputado .bioDetalhes strong")
+
+		birthdateA := strings.Split(bioDetails.Eq(1).Text(), "/")
+
+		var year int
+		switch id {
+		case "123756", "160635":
+			year = 1970
+		case "74230", "129618":
+			year = 1952
+		case "74665", "141387":
+			year = 1953
+		case "73933":
+			year = 1959
+		case "73786":
+			year = 1939
+		case "74124":
+			year = 1964
+		default:
+			year, _ = strconv.Atoi(birthdateA[2])
+		}
+
+		month, _ := strconv.Atoi(birthdateA[1])
+		day, _ := strconv.Atoi(birthdateA[0])
+		loc, _ := time.LoadLocation("America/Sao_Paulo")
+		birthDate := Date{time.Date(year, time.Month(month), day, 0, 0, 0, 0, loc)}
+
 		_, err := DB.Upsert(bson.M{"id": d.Id}, bson.M{
 			"$setOnInsert": bson.M{
 				"createdat": time.Now(),
@@ -61,6 +93,7 @@ func (p SaveDeputiesAbout) Run(DB models.Database) {
 				"summary":   bio.Eq(0).Find(".bioOutrosTexto").Text(),
 				"biography": strings.Join(biographyItems, "\n"),
 				"link":      "http://www.camara.gov.br/internet/Deputado/dep_Detalhe.asp?id=" + id,
+				"birthdate": birthDate,
 			},
 			"$addToSet": bson.M{
 				"sources": source,
@@ -70,11 +103,11 @@ func (p SaveDeputiesAbout) Run(DB models.Database) {
 	}
 }
 
-func getIdDeputado(ids []Identifier) string {
+func getIdDeputado(ids []Identifier) (string, bool) {
 	for _, id := range ids {
 		if *id.Scheme == "ideCadastro" {
-			return *id.Identifier
+			return *id.Identifier, true
 		}
 	}
-	panic("not found id")
+	return "", false
 }
