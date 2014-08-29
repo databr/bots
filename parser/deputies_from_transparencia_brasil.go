@@ -35,7 +35,7 @@ func (p SaveDeputiesFromTransparenciaBrasil) Run(DB models.Database) {
 			},
 			"$set": bson.M{
 				"summary":          parliamenrian.MiniBio,
-				"nationalidentity": parliamenrian.CPF,
+				"nationalidentify": parliamenrian.CPF,
 			},
 			"$addToSet": bson.M{
 				"sources": source,
