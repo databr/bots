@@ -40,8 +40,16 @@ func (p SaveDeputiesFromTransparenciaBrasil) Run(DB models.Database) {
 			"$addToSet": bson.M{
 				"sources": source,
 				"identifiers": bson.M{
-					"identifier": toPtr(parliamenrian.Id),
-					"scheme":     toPtr("TransparenciaBrasilID"),
+					"$each": []bson.M{
+						{
+							"identifier": parliamenrian.Id,
+							"scheme":     "TransparenciaBrasilID",
+						},
+						{
+							"identifier": parliamenrian.CPF,
+							"scheme":     "CPF",
+						},
+					},
 				},
 			},
 		}, models.Parliamentarian{})
