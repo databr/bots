@@ -1,45 +1,25 @@
 package parser
 
 import (
-	"fmt"
+	"os"
 
-	"github.com/wsxiaoys/terminal"
+	"github.com/op/go-logging"
 )
 
-type llog struct {
-}
+var log = logging.MustGetLogger("camarabook")
 
-func (l llog) Log(v ...interface{}) {
-	message := fmt.Sprintln(v...)
-	l.log("y", "LOG", message)
-}
-
-func (l llog) Debug(v ...interface{}) {
-	message := fmt.Sprintln(v...)
-	l.log("b", "DEBUG", message)
-}
-
-func (l llog) Error(v ...interface{}) {
-	message := fmt.Sprintln(v...)
-	l.log("r", "ERROR", message)
-}
-
-func (l llog) log(color, prefix, message string) {
-	terminal.Stdout.Color(color).
-		Print(prefix + ": " + message).Reset()
-}
-
-var LLog *llog
+var format = "%{color}%{time:15:04:05.000000} ▶ %{level:.4s} %{id:03x}%{color:reset} %{message}"
 
 func init() {
-	LLog = new(llog)
+	logBackend := logging.NewLogBackend(os.Stderr, "", 0)
+	syslogBackend, err := logging.NewSyslogBackend("")
+
+	logging.SetFormatter(logging.MustStringFormatter(format))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	logging.SetBackend(logBackend, syslogBackend)
+
+	logging.SetLevel(logging.DEBUG, "example")
 }
-
-//func main() {
-//.Color("y").
-//Print("Hello world").Nl().
-//Reset().
-//Colorf("@{kW}Hello world\n")
-
-//color.Print("@rHello world")
-//}

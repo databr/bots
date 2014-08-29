@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"log"
 	"strings"
 	"time"
 
@@ -25,7 +24,7 @@ func (p SaveDeputiesFromXML) Run(DB models.Database) {
 	var e error
 
 	if doc, e = goquery.NewDocument(xmlURL); e != nil {
-		log.Fatal(e)
+		log.Critical(e.Error())
 	}
 
 	doc.Find("deputado").Each(func(i int, s *goquery.Selection) {

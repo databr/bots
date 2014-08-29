@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -47,7 +46,7 @@ func (p SaveDeputiesQuotas) Run(DB models.Database) {
 func getPages(url, id string, DB models.Database) {
 	doc, err := goquery.NewDocument(url)
 	if err != nil {
-		log.Println("Problems", url)
+		log.Critical("Problems %s", url)
 		return
 	}
 
@@ -72,13 +71,9 @@ func getQuotaPage(id, url string, DB models.Database) {
 	<-time.After(2 * time.Second)
 	doc, err := goquery.NewDocument(url)
 	if err != nil {
-		LLog.Error(err, url)
+		log.Error(err.Error(), url)
 		return
 	}
-
-	it, err := CACHE.Get(url)
-
-	LLog.Log(it, err)
 
 	var p models.Parliamentarian
 	DB.FindOne(bson.M{
@@ -121,7 +116,7 @@ func getQuotaPage(id, url string, DB models.Database) {
 			value = strings.TrimSpace(strings.Replace(value, ",", ".", -1))
 			valueF, _ := strconv.ParseFloat(value, 64)
 
-			LLog.Log(orderN)
+			log.Debug(orderN)
 
 			orderNS := strings.Split(orderN, ":")
 			var ticket string
@@ -131,7 +126,7 @@ func getQuotaPage(id, url string, DB models.Database) {
 				ticket = strings.TrimSpace(orderNS[1])
 			}
 
-			LLog.Debug(*p.Id)
+			log.Debug(*p.Id)
 
 			if valueF < 1 {
 				panic(value + ": " + url)

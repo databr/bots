@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"log"
 	"strings"
 	"time"
 
@@ -31,7 +30,7 @@ func (p SaveDeputiesAbout) Run(DB models.Database) {
 		var e error
 
 		if doc, e = goquery.NewDocument(bioURL); e != nil {
-			log.Fatal(e)
+			log.Critical(e.Error())
 		}
 
 		bio := doc.Find("#bioDeputado .bioOutros")

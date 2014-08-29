@@ -16,6 +16,8 @@ func (p SaveDeputiesFromTransparenciaBrasil) Run(DB models.Database) {
 		Note: toPtr("Transparencia Brasil"),
 	}
 
+	log.Info("Starting SaveDeputiesFromTransparenciaBrasil")
+
 	c := transparencia.New("kqOfbdNKSlpf")
 	query := map[string]string{
 		"casa": "1",
@@ -25,6 +27,7 @@ func (p SaveDeputiesFromTransparenciaBrasil) Run(DB models.Database) {
 
 	for _, parliamenrian := range parliamenrians {
 		uri := models.MakeUri(parliamenrian.Apelido)
+		log.Info("Saving %s", parliamenrian.Nome)
 
 		_, err := DB.Upsert(bson.M{"id": uri}, bson.M{
 			"$currentDate": bson.M{

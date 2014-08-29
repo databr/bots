@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"log"
 	"regexp"
 	"time"
 
@@ -21,7 +20,7 @@ func (p SaveDeputiesFromSearch) Run(DB models.Database) {
 	var e error
 
 	if doc, e = goquery.NewDocument(searchURL); e != nil {
-		log.Fatal(e)
+		log.Critical(e.Error())
 	}
 
 	source := popolo.Source{
