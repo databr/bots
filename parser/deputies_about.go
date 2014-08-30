@@ -74,6 +74,7 @@ func (p SaveDeputiesAbout) Run(DB models.Database) {
 		case "74124":
 			year = 1964
 		default:
+			log.Debug("(%s) %s", id, birthdateA)
 			year, _ = strconv.Atoi(birthdateA[2])
 		}
 
