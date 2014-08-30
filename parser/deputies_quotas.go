@@ -128,9 +128,6 @@ func getQuotaPage(id, url string, DB models.Database) {
 
 			log.Debug(*p.Id)
 
-			if valueF < 1 {
-				panic(value + ": " + url)
-			}
 			_, err = DB.Upsert(bson.M{"order": orderN, "parliamentarian": p.Id}, bson.M{
 				"$set": bson.M{
 					"company":        cnpj,
