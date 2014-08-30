@@ -17,6 +17,7 @@ Available parsers:
     --save-deputies-about        Save deputies about information from official site
     --save-deputies-quotas
     --save-deputies-info-from-transparencia-brasil
+    --save-senators-from-index
 `
 
 var mapp = map[string]Parser{
@@ -25,6 +26,7 @@ var mapp = map[string]Parser{
 	"--save-deputies-about":                          SaveDeputiesAbout{},
 	"--save-deputies-quotas":                         SaveDeputiesQuotas{},
 	"--save-deputies-info-from-transparencia-brasil": SaveDeputiesFromTransparenciaBrasil{},
+	"--save-senators-from-index":                     SaveSenatorsFromIndex{},
 }
 
 var DB models.Database
