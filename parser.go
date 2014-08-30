@@ -11,7 +11,7 @@ import (
 var usage = `Usage: camarabook-data <parsers>...
 
 Available parsers:
-
+    --all
     --save-deputies-from-search  Save deputies from official site search
     --save-deputies-from-xml     Save deputies from official site xml
     --save-deputies-about        Save deputies about information from official site
@@ -39,12 +39,19 @@ func main() {
 
 	if len(os.Args) < 2 {
 		fmt.Println(usage)
+		return
 	}
 
 	DB = models.New()
 
 	parsers := os.Args[1:]
 
+	if os.Args[1] == "--all" {
+		parsers = []string{}
+		for k, _ := range mapp {
+			parsers = append(parsers, k)
+		}
+	}
 	for i, _ := range parsers {
 		Run(mapp[parsers[i]])
 	}
