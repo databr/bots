@@ -75,7 +75,16 @@ func (p SaveDeputiesAbout) Run(DB models.Database) {
 			year = 1964
 		default:
 			log.Debug("(%s) %s", id, birthdateA)
+			if len(birthdateA) == 0 {
+				log.Fatalf("Error on %s", bioURL)
+				continue
+			}
 			year, _ = strconv.Atoi(birthdateA[2])
+		}
+
+		if len(birthdateA) == 0 {
+			log.Fatalf("Error on %s", bioURL)
+			continue
 		}
 
 		month, _ := strconv.Atoi(birthdateA[1])
