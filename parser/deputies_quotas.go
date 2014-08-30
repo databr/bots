@@ -120,7 +120,7 @@ func getQuotaPage(id, url string, DB models.Database) {
 
 			orderNS := strings.Split(orderN, ":")
 			var ticket string
-			if len(orderN) == 1 {
+			if len(orderNS) == 1 {
 				ticket = strings.TrimSpace(orderNS[0])
 			} else {
 				ticket = strings.TrimSpace(orderNS[1])
