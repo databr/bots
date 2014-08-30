@@ -1,6 +1,9 @@
 package parser
 
 import (
+	"errors"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -14,7 +17,7 @@ type SaveSenatorsFromIndex struct {
 }
 
 func (self SaveSenatorsFromIndex) Run(DB models.Database) {
-	indexURL := "http://www.senado.gov.br/senadores"
+	indexURL := "http://www.senado.gov.br"
 
 	source := popolo.Source{
 		Url:  toPtr(indexURL),
@@ -24,7 +27,7 @@ func (self SaveSenatorsFromIndex) Run(DB models.Database) {
 	var doc *goquery.Document
 	var e error
 
-	if doc, e = goquery.NewDocument(indexURL); e != nil {
+	if doc, e = goquery.NewDocument(indexURL + "/senadores/"); e != nil {
 		log.Critical(e.Error())
 	}
 
@@ -33,7 +36,7 @@ func (self SaveSenatorsFromIndex) Run(DB models.Database) {
 		name := data.Eq(0).Text()
 		link, okLink := data.Eq(0).Find("a").Attr("href")
 		if !okLink {
-			link = ""
+			checkError(errors.New("link not found"))
 		} else {
 			link = indexURL + link
 		}
@@ -63,6 +66,9 @@ func (self SaveSenatorsFromIndex) Run(DB models.Database) {
 			"id": models.MakeUri(name),
 		}
 
+		re := regexp.MustCompile("paginst/senador(.+)a.asp")
+		senatorId := re.FindStringSubmatch(link)[1]
+
 		_, err := DB.Upsert(q, bson.M{
 			"$setOnInsert": bson.M{
 				"createdat": time.Now(),
@@ -88,13 +94,58 @@ func (self SaveSenatorsFromIndex) Run(DB models.Database) {
 						},
 					},
 				},
+				"identifiers": bson.M{
+					"$each": []popolo.Identifier{
+						{Identifier: toPtr(senatorId), Scheme: toPtr("CodSenador")},
+					},
+				},
 			},
 			"$set": bson.M{
-				"name":  name,
-				"email": email,
-				"link":  toPtr(link),
+				"name":      name,
+				"email":     email,
+				"link":      toPtr(link),
+				"shortname": models.MakeUri(name),
 			},
 		}, models.Parliamentarian{})
 		checkError(err)
+
+		docDetails, e := goquery.NewDocument(link)
+		if e != nil {
+			log.Critical(e.Error())
+		}
+		info := docDetails.Find(".dadosSenador b")
+		birthdateA := strings.Split(info.Eq(1).Text(), "/")
+		year, _ := strconv.Atoi(birthdateA[2])
+		month, _ := strconv.Atoi(birthdateA[1])
+		day, _ := strconv.Atoi(birthdateA[0])
+		loc, _ := time.LoadLocation("America/Sao_Paulo")
+		birthDate := popolo.Date{time.Date(year, time.Month(month), day, 0, 0, 0, 0, loc)}
+
+		_, err = DB.Upsert(q, bson.M{
+			"$setOnInsert": bson.M{
+				"createdat": time.Now(),
+			},
+			"$currentDate": bson.M{
+				"updatedat": true,
+			},
+			"$set": bson.M{
+				"birthdate": birthDate,
+			},
+			"$addToSet": bson.M{
+				"sources": source,
+				"othernames": popolo.OtherNames{
+					Name: toPtr(info.Eq(0).Text()),
+					Note: toPtr("Nome de nascimento"),
+				},
+				"contactdetails": popolo.ContactDetail{
+					Label:   toPtr("Gabinete"),
+					Type:    toPtr("address"),
+					Value:   toPtr(info.Eq(4).Text()),
+					Sources: []popolo.Source{source},
+				},
+			},
+		}, models.Parliamentarian{})
+		checkError(err)
+
 	})
 }
