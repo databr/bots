@@ -24,6 +24,7 @@ func (p SaveDeputiesQuotas) Run(DB models.Database) {
 	if isCached(url) {
 		return
 	}
+	defer deferedCache(url)
 
 	doc, err := goquery.NewDocument(url)
 	if err != nil {
@@ -40,19 +41,13 @@ func (p SaveDeputiesQuotas) Run(DB models.Database) {
 			getPages(CAMARABASEURL+url, id, DB)
 		}
 	})
-
-	key := urlToKey(url)
-	CACHE.Set(&memcache.Item{
-		Key:        key,
-		Value:      []byte("true"),
-		Expiration: (60 * 60) * 24,
-	})
 }
 
 func getPages(url, id string, DB models.Database) {
 	if isCached(url) {
 		return
 	}
+	defer deferedCache(url)
 
 	doc, err := goquery.NewDocument(url)
 	if err != nil {
@@ -78,6 +73,11 @@ func getPages(url, id string, DB models.Database) {
 }
 
 func getQuotaPage(id, url string, DB models.Database) {
+	if isCached(url) {
+		return
+	}
+	defer deferedCache(url)
+
 	<-time.After(2 * time.Second)
 	doc, err := goquery.NewDocument(url)
 	if err != nil {
@@ -152,6 +152,4 @@ func getQuotaPage(id, url string, DB models.Database) {
 			panic(data.Text())
 		}
 	})
-
-	CACHE.Set(&memcache.Item{Key: url, Value: []byte("true")})
 }
