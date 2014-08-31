@@ -3,7 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
 	"reflect"
+	"syscall"
 	"time"
 
 	"github.com/camarabook/camarabook-api/models"
@@ -28,15 +31,25 @@ func main() {
 	max := len(mapp)
 	c := 0
 
-	for {
-		if c == max {
-			time.Sleep(1 * time.Hour)
-			c = 0
+	go func() {
+		for {
+			if c == max {
+				time.Sleep(1 * time.Hour)
+				c = 0
+			}
+			log.Println(c, max)
+			Collector(mapp[c], reflect.ValueOf(mapp[c]).Type().Name())
+			c++
 		}
-		log.Println(c, max)
-		Collector(mapp[c], reflect.ValueOf(mapp[c]).Type().Name())
-		c++
-	}
+	}()
+
+	ch := make(chan os.Signal)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	log.Println(<-ch)
+
+	log.Println("Finishing....")
+	close(WorkerQueue)
+	os.Exit(0)
 }
 
 // ---
