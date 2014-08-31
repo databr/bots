@@ -126,8 +126,6 @@ func getQuotaPage(id, url string, DB models.Database) {
 				ticket = strings.TrimSpace(orderNS[1])
 			}
 
-			log.Debug(*p.Id)
-
 			_, err = DB.Upsert(bson.M{"order": orderN, "parliamentarian": p.Id}, bson.M{
 				"$set": bson.M{
 					"company":        cnpj,
