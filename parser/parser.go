@@ -52,7 +52,8 @@ func cacheURL(url string) {
 
 func deferedCache(url string) {
 	if err := recover(); err != nil {
-		os.Exit(1)
+		// os.Exit(1)
+		log.Error("%s", err)
 	} else {
 		cacheURL(url)
 	}
