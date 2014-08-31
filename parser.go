@@ -2,61 +2,132 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"log"
+	"reflect"
+	"time"
 
 	"github.com/camarabook/camarabook-api/models"
 	. "github.com/camarabook/camarabook-data/parser"
 )
 
-var usage = `Usage: camarabook-data <parsers>...
-
-Available parsers:
-    --all
-    --save-deputies-from-search  Save deputies from official site search
-    --save-deputies-from-xml     Save deputies from official site xml
-    --save-deputies-about        Save deputies about information from official site
-    --save-deputies-quotas
-    --save-deputies-info-from-transparencia-brasil
-    --save-senators-from-index
-`
-
-var mapp = map[string]Parser{
-	"--save-deputies-from-search":                    SaveDeputiesFromSearch{},
-	"--save-deputies-from-xml":                       SaveDeputiesFromXML{},
-	"--save-deputies-about":                          SaveDeputiesAbout{},
-	"--save-deputies-quotas":                         SaveDeputiesQuotas{},
-	"--save-deputies-info-from-transparencia-brasil": SaveDeputiesFromTransparenciaBrasil{},
-	"--save-senators-from-index":                     SaveSenatorsFromIndex{},
+var mapp = []Parser{
+	SaveDeputiesFromSearch{},
+	SaveDeputiesFromXML{},
+	SaveDeputiesAbout{},
+	SaveDeputiesQuotas{},
+	SaveDeputiesFromTransparenciaBrasil{},
+	SaveSenatorsFromIndex{},
 }
 
 var DB models.Database
 
 func main() {
-	if len(os.Args) == 2 && (os.Args[1] == "-h" || os.Args[1] == "--help") {
-		fmt.Println(usage)
-		return
-	}
-
-	if len(os.Args) < 2 {
-		fmt.Println(usage)
-		return
-	}
-
+	StartDispatcher(6)
 	DB = models.New()
 
-	parsers := os.Args[1:]
+	max := len(mapp)
+	c := 0
 
-	if os.Args[1] == "--all" {
-		parsers = []string{}
-		for k, _ := range mapp {
-			parsers = append(parsers, k)
+	for {
+		if c == max {
+			time.Sleep(1 * time.Hour)
+			c = 0
 		}
-	}
-	for i, _ := range parsers {
-		Run(mapp[parsers[i]])
+		log.Println(c, max)
+		Collector(mapp[c], reflect.ValueOf(mapp[c]).Type().Name())
+		c++
 	}
 }
 
-func Run(p Parser) {
-	p.Run(DB)
+// ---
+
+type WorkRequest struct {
+	Name   string
+	Parser Parser
+	Delay  time.Duration
+}
+
+var WorkQueue = make(chan WorkRequest, 100)
+
+func Collector(parser Parser, name string) {
+	delay := time.Second * 8
+	work := WorkRequest{Parser: parser, Delay: delay, Name: name}
+	WorkQueue <- work
+	fmt.Println("Work", name, "queued")
+	return
+}
+
+func NewWorker(id int, workerQueue chan chan WorkRequest) Worker {
+	worker := Worker{
+		ID:          id,
+		Work:        make(chan WorkRequest),
+		WorkerQueue: workerQueue,
+		QuitChan:    make(chan bool)}
+
+	return worker
+}
+
+type Worker struct {
+	ID          int
+	Work        chan WorkRequest
+	WorkerQueue chan chan WorkRequest
+	QuitChan    chan bool
+}
+
+func (w Worker) Start() {
+	go func() {
+		for {
+			w.WorkerQueue <- w.Work
+
+			select {
+			case work := <-w.Work:
+				fmt.Printf("worker%d: Received work request, delaying for %f seconds, to %s\n", w.ID, work.Delay.Seconds(), work.Name)
+
+				time.Sleep(work.Delay)
+				fmt.Printf("worker%d: Hello, %s!\n", w.ID, work.Name)
+				work.Parser.Run(DB)
+			case <-w.QuitChan:
+				fmt.Printf("worker%d stopping\n", w.ID)
+				return
+			}
+		}
+	}()
+}
+
+func (w Worker) Stop() {
+	go func() {
+		w.QuitChan <- true
+	}()
+}
+
+var WorkerQueue chan chan WorkRequest
+
+func StartDispatcher(nworkers int) {
+	WorkerQueue = make(chan chan WorkRequest, nworkers)
+	for i := 0; i < nworkers; i++ {
+		fmt.Println("Starting worker", i+1)
+		worker := NewWorker(i+1, WorkerQueue)
+		worker.Start()
+	}
+
+	go func() {
+		for {
+			select {
+			case work := <-WorkQueue:
+				fmt.Println("Received", work.Name, "requeust", work.Name)
+				go func() {
+					worker := <-WorkerQueue
+
+					fmt.Println("Dispatching", work.Name, "request", work.Name)
+					worker <- work
+				}()
+			}
+		}
+	}()
+}
+
+func checkError(err error) {
+	if err != nil {
+		panic(err)
+	}
 }
