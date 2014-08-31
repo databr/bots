@@ -1,14 +1,11 @@
 package parser
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/camarabook/camarabook-api/models"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -17,12 +14,6 @@ const (
 	CAMARABASEURL      = "http://www.camara.gov.br/"
 	QUOATAANALITICOURL = "http://www.camara.gov.br/cota-parlamentar/cota-analitico?nuDeputadoId=ID&numMes=MONTH&numAno=YEAR&numSubCota="
 )
-
-var CACHE *memcache.Client
-
-func init() {
-	CACHE = memcache.New("dev:11211")
-}
 
 type SaveDeputiesQuotas struct {
 }
@@ -163,25 +154,4 @@ func getQuotaPage(id, url string, DB models.Database) {
 	})
 
 	CACHE.Set(&memcache.Item{Key: url, Value: []byte("true")})
-}
-
-func checkError(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
-func urlToKey(url string) string {
-	hasher := md5.New()
-	hasher.Write([]byte(url))
-	return hex.EncodeToString(hasher.Sum(nil))
-}
-
-func isCached(url string) bool {
-	key := urlToKey(url)
-	_, err := CACHE.Get(key)
-	if err == nil {
-		return true
-	}
-	return false
 }
