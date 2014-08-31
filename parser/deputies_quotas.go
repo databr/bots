@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"strconv"
 	"strings"
 	"time"
@@ -26,7 +28,13 @@ type SaveDeputiesQuotas struct {
 }
 
 func (p SaveDeputiesQuotas) Run(DB models.Database) {
-	doc, err := goquery.NewDocument("http://www.camara.gov.br/cota-parlamentar/pg-cota-lista-deputados.jsp")
+	url := "http://www.camara.gov.br/cota-parlamentar/pg-cota-lista-deputados.jsp"
+
+	if isCached(url) {
+		return
+	}
+
+	doc, err := goquery.NewDocument(url)
 	if err != nil {
 		panic(err)
 		return
@@ -41,9 +49,20 @@ func (p SaveDeputiesQuotas) Run(DB models.Database) {
 			getPages(CAMARABASEURL+url, id, DB)
 		}
 	})
+
+	key := urlToKey(url)
+	CACHE.Set(&memcache.Item{
+		Key:        key,
+		Value:      []byte("true"),
+		Expiration: (60 * 60) * 24,
+	})
 }
 
 func getPages(url, id string, DB models.Database) {
+	if isCached(url) {
+		return
+	}
+
 	doc, err := goquery.NewDocument(url)
 	if err != nil {
 		log.Critical("Problems %s", url)
@@ -150,4 +169,19 @@ func checkError(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func urlToKey(url string) string {
+	hasher := md5.New()
+	hasher.Write([]byte(url))
+	return hex.EncodeToString(hasher.Sum(nil))
+}
+
+func isCached(url string) bool {
+	key := urlToKey(url)
+	_, err := CACHE.Get(key)
+	if err == nil {
+		return true
+	}
+	return false
 }
