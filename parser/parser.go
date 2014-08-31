@@ -14,6 +14,11 @@ var CACHE *memcache.Client
 func init() {
 	memcacheURL := os.Getenv("MEMCACHE_URL")
 	CACHE = memcache.New(memcacheURL)
+	CACHE.Set(&memcache.Item{Key: "test", Value: []byte("tested")})
+	_, err := CACHE.Get("test")
+	if err != nil {
+		panic(err)
+	}
 }
 
 type Parser interface {
