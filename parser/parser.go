@@ -16,7 +16,7 @@ func init() {
 	CACHE = memcache.New(memcacheURL)
 	CACHE.Set(&memcache.Item{Key: "test", Value: []byte("tested")})
 	_, err := CACHE.Get("test")
-	if err != nil {
+	if err != nil && err != memcache.ErrCacheMiss {
 		panic(err)
 	}
 }

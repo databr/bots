@@ -16,6 +16,11 @@ func (p SaveDeputiesFromTransparenciaBrasil) Run(DB models.Database) {
 		Note: toPtr("Transparencia Brasil"),
 	}
 
+	if isCached("http://dev.transparencia.org.br/") {
+		return
+	}
+	defer deferedCache("http://dev.transparencia.org.br/")
+
 	log.Info("Starting SaveDeputiesFromTransparenciaBrasil")
 
 	c := transparencia.New("kqOfbdNKSlpf")

@@ -26,6 +26,11 @@ func (p SaveDeputiesAbout) Run(DB models.Database) {
 		}
 
 		bioURL := "http://www2.camara.leg.br/deputados/pesquisa/layouts_deputados_biografia?pk=" + id
+
+		if isCached(bioURL) {
+			continue
+		}
+
 		source := Source{
 			Url:  toPtr(bioURL),
 			Note: toPtr("Pesquisa Câmara"),
@@ -110,6 +115,7 @@ func (p SaveDeputiesAbout) Run(DB models.Database) {
 			},
 		}, models.Parliamentarian{})
 		checkError(err)
+		cacheURL(bioURL)
 	}
 }
 
