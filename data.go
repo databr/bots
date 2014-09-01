@@ -17,7 +17,7 @@ var mapp = []Parser{
 	SaveDeputiesFromSearch{},
 	SaveDeputiesFromXML{},
 	SaveDeputiesAbout{},
-	SaveDeputiesQuotas{},
+	// SaveDeputiesQuotas{},
 	SaveDeputiesFromTransparenciaBrasil{},
 	SaveSenatorsFromIndex{},
 }
@@ -37,7 +37,6 @@ func main() {
 				time.Sleep(1 * time.Hour)
 				c = 0
 			}
-			log.Println(c, max)
 			Collector(mapp[c], reflect.ValueOf(mapp[c]).Type().Name())
 			c++
 		}
@@ -49,7 +48,6 @@ func main() {
 
 	log.Println("Finishing....")
 	close(WorkerQueue)
-	os.Exit(0)
 }
 
 // ---
