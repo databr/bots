@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/camarabook/camarabook-api/models"
-	. "github.com/databr/bots/parser"
+	. "github.com/databr/bots/go_bot/parser"
 )
 
 var mapp = []Parser{

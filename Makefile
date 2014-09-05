@@ -6,7 +6,7 @@ help:
 no_targets__:
 
 pkg/go-bot-linux-amd64:
-	GOOS=linux GOARCH=amd64 go build -o pkg/go-bot-linux-amd64
+	cd go_bot && GOOS=linux GOARCH=amd64 go build -o ../pkg/go-bot-linux-amd64
 
 clean:
 	rm -Rf pkg/*
