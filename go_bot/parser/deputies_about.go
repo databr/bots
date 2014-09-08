@@ -78,6 +78,8 @@ func (p SaveDeputiesAbout) Run(DB models.Database) {
 			year = 1939
 		case "74124":
 			year = 1964
+		case "74447":
+			year = 1936
 		default:
 			log.Debug("(%s) %s", id, birthdateA)
 			if len(birthdateA) == 0 {
