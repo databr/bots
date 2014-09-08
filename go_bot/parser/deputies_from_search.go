@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/camarabook/camarabook-api/models"
-	"github.com/camarabook/go-popolo"
+	"github.com/databr/api/models"
+	"github.com/databr/go-popolo"
 	"gopkg.in/mgo.v2/bson"
 )
 

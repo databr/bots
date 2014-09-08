@@ -1,8 +1,8 @@
 package parser
 
 import (
-	"github.com/camarabook/camarabook-api/models"
-	. "github.com/camarabook/go-popolo"
+	"github.com/databr/api/models"
+	"github.com/databr/go-popolo"
 	"github.com/dukex/go-transparencia"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -11,7 +11,7 @@ type SaveDeputiesFromTransparenciaBrasil struct {
 }
 
 func (p SaveDeputiesFromTransparenciaBrasil) Run(DB models.Database) {
-	source := Source{
+	source := popolo.Source{
 		Url:  toPtr("http://dev.transparencia.org.br/"),
 		Note: toPtr("Transparencia Brasil"),
 	}

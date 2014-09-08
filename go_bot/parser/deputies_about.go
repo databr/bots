@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/camarabook/camarabook-api/models"
-	. "github.com/camarabook/go-popolo"
+	"github.com/databr/api/models"
+	"github.com/databr/go-popolo"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -31,7 +31,7 @@ func (p SaveDeputiesAbout) Run(DB models.Database) {
 			continue
 		}
 
-		source := Source{
+		source := popolo.Source{
 			Url:  toPtr(bioURL),
 			Note: toPtr("Pesquisa Câmara"),
 		}
@@ -95,7 +95,7 @@ func (p SaveDeputiesAbout) Run(DB models.Database) {
 		month, _ := strconv.Atoi(birthdateA[1])
 		day, _ := strconv.Atoi(birthdateA[0])
 		loc, _ := time.LoadLocation("America/Sao_Paulo")
-		birthDate := Date{time.Date(year, time.Month(month), day, 0, 0, 0, 0, loc)}
+		birthDate := popolo.Date{time.Date(year, time.Month(month), day, 0, 0, 0, 0, loc)}
 
 		_, err := DB.Upsert(bson.M{"id": d.Id}, bson.M{
 			"$setOnInsert": bson.M{
@@ -119,7 +119,7 @@ func (p SaveDeputiesAbout) Run(DB models.Database) {
 	}
 }
 
-func getIdDeputado(ids []Identifier) (string, bool) {
+func getIdDeputado(ids []popolo.Identifier) (string, bool) {
 	for _, id := range ids {
 		if *id.Scheme == "ideCadastro" {
 			return *id.Identifier, true

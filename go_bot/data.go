@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/camarabook/camarabook-api/models"
+	"github.com/databr/api/models"
 	. "github.com/databr/bots/go_bot/parser"
 )
 

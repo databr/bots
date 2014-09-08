@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/bradfitz/gomemcache/memcache"
-	"github.com/camarabook/camarabook-api/models"
+	"github.com/databr/api/models"
 )
 
 var CACHE *memcache.Client
