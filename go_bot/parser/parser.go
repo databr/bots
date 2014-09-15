@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"os"
+	"strings"
 
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/databr/api/models"
@@ -62,4 +63,8 @@ func deferedCache(url string) {
 	} else {
 		cacheURL(url)
 	}
+}
+
+func titlelize(s string) string {
+	return strings.Title(strings.ToLower(s))
 }

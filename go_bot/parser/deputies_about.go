@@ -31,9 +31,9 @@ func (p SaveDeputiesAbout) Run(DB models.Database) {
 			continue
 		}
 
-		source := popolo.Source{
-			Url:  toPtr(bioURL),
-			Note: toPtr("Pesquisa Câmara"),
+		source := models.Source{
+			Url:  bioURL,
+			Note: "Pesquisa Câmara",
 		}
 
 		var doc *goquery.Document
@@ -121,10 +121,10 @@ func (p SaveDeputiesAbout) Run(DB models.Database) {
 	}
 }
 
-func getIdDeputado(ids []popolo.Identifier) (string, bool) {
+func getIdDeputado(ids []models.Identifier) (string, bool) {
 	for _, id := range ids {
-		if *id.Scheme == "ideCadastro" {
-			return *id.Identifier, true
+		if id.Scheme == "ideCadastro" {
+			return id.Identifier, true
 		}
 	}
 	return "", false

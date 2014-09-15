@@ -19,9 +19,9 @@ type SaveSenatorsFromIndex struct {
 func (self SaveSenatorsFromIndex) Run(DB models.Database) {
 	indexURL := "http://www.senado.gov.br"
 
-	source := popolo.Source{
-		Url:  toPtr(indexURL),
-		Note: toPtr("senado.gov.br website"),
+	source := models.Source{
+		Url:  indexURL,
+		Note: "senado.gov.br website",
 	}
 
 	var doc *goquery.Document
@@ -48,7 +48,7 @@ func (self SaveSenatorsFromIndex) Run(DB models.Database) {
 			email = strings.Replace(email, "mailto:", "", -1)
 		}
 
-		partyId := toPtr(models.MakeUri(data.Eq(1).Text()))
+		partyId := models.MakeUri(data.Eq(1).Text())
 		DB.Upsert(bson.M{"id": partyId}, bson.M{
 			"$setOnInsert": bson.M{
 				"createdat": time.Now(),
@@ -58,7 +58,7 @@ func (self SaveSenatorsFromIndex) Run(DB models.Database) {
 			},
 			"$set": bson.M{
 				"id":             partyId,
-				"classification": toPtr("party"),
+				"classification": "party",
 			},
 		}, &models.Party{})
 
@@ -79,31 +79,31 @@ func (self SaveSenatorsFromIndex) Run(DB models.Database) {
 			"$addToSet": bson.M{
 				"sources": source,
 				"contactdetails": bson.M{
-					"$each": []popolo.ContactDetail{
+					"$each": []models.ContactDetail{
 						{
-							Label:   toPtr("Telefone"),
-							Type:    toPtr("phone"),
-							Value:   toPtr(data.Eq(4).Text()),
-							Sources: []popolo.Source{source},
+							Label:   "Telefone",
+							Type:    "phone",
+							Value:   data.Eq(4).Text(),
+							Sources: []models.Source{source},
 						},
 						{
-							Label:   toPtr("Fax"),
-							Type:    toPtr("fax"),
-							Value:   toPtr(data.Eq(5).Text()),
-							Sources: []popolo.Source{source},
+							Label:   "Fax",
+							Type:    "fax",
+							Value:   data.Eq(5).Text(),
+							Sources: []models.Source{source},
 						},
 					},
 				},
 				"identifiers": bson.M{
-					"$each": []popolo.Identifier{
-						{Identifier: toPtr(senatorId), Scheme: toPtr("CodSenador")},
+					"$each": []models.Identifier{
+						{Identifier: senatorId, Scheme: "CodSenador"},
 					},
 				},
 			},
 			"$set": bson.M{
 				"name":      name,
 				"email":     email,
-				"link":      toPtr(link),
+				"link":      link,
 				"shortname": models.MakeUri(name),
 			},
 		}, models.Parliamentarian{})
@@ -133,19 +133,18 @@ func (self SaveSenatorsFromIndex) Run(DB models.Database) {
 			},
 			"$addToSet": bson.M{
 				"sources": source,
-				"othernames": popolo.OtherNames{
-					Name: toPtr(info.Eq(0).Text()),
-					Note: toPtr("Nome de nascimento"),
+				"othernames": models.OtherNames{
+					Name: info.Eq(0).Text(),
+					Note: "Nome de nascimento",
 				},
-				"contactdetails": popolo.ContactDetail{
-					Label:   toPtr("Gabinete"),
-					Type:    toPtr("address"),
-					Value:   toPtr(info.Eq(4).Text()),
-					Sources: []popolo.Source{source},
+				"contactdetails": models.ContactDetail{
+					Label:   "Gabinete",
+					Type:    "address",
+					Value:   info.Eq(4).Text(),
+					Sources: []models.Source{source},
 				},
 			},
 		}, models.Parliamentarian{})
 		checkError(err)
-
 	})
 }

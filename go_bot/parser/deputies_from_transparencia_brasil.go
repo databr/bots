@@ -2,7 +2,6 @@ package parser
 
 import (
 	"github.com/databr/api/models"
-	"github.com/databr/go-popolo"
 	"github.com/dukex/go-transparencia"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -11,9 +10,9 @@ type SaveDeputiesFromTransparenciaBrasil struct {
 }
 
 func (p SaveDeputiesFromTransparenciaBrasil) Run(DB models.Database) {
-	source := popolo.Source{
-		Url:  toPtr("http://dev.transparencia.org.br/"),
-		Note: toPtr("Transparencia Brasil"),
+	source := models.Source{
+		Url:  "http://dev.transparencia.org.br/",
+		Note: "Transparencia Brasil",
 	}
 
 	if isCached("http://dev.transparencia.org.br/") {

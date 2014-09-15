@@ -6,7 +6,6 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/databr/api/models"
-	"github.com/databr/go-popolo"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -23,9 +22,9 @@ func (p SaveDeputiesFromSearch) Run(DB models.Database) {
 		log.Critical(e.Error())
 	}
 
-	source := popolo.Source{
-		Url:  toPtr(searchURL),
-		Note: toPtr("Pesquisa Câmara"),
+	source := models.Source{
+		Url:  searchURL,
+		Note: "Pesquisa Câmara",
 	}
 
 	doc.Find("#deputado option").Each(func(i int, s *goquery.Selection) {
@@ -47,8 +46,8 @@ func (p SaveDeputiesFromSearch) Run(DB models.Database) {
 				},
 				"$addToSet": bson.M{
 					"sources": source,
-					"identifiers": popolo.Identifier{
-						Identifier: toPtr(info[2]), Scheme: toPtr("nMatricula"),
+					"identifiers": models.Identifier{
+						Identifier: info[2], Scheme: "nMatricula",
 					},
 				},
 			}, models.Parliamentarian{})
