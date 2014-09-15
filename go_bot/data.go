@@ -55,7 +55,7 @@ func addBot(bot Parser) {
 	onlyVar := strings.Split(os.Getenv("ONLY_BOT"), ",")
 	botName := reflect.ValueOf(bot).Type().Name()
 
-	if len(onlyVar) > 0 {
+	if len(onlyVar) > 0 && onlyVar[0] != "" {
 		for _, b := range onlyVar {
 			if b != "" && b == botName {
 				log.Println(b)
