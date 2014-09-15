@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"reflect"
+	"strings"
 	"syscall"
 	"time"
 
@@ -13,14 +14,7 @@ import (
 	. "github.com/databr/bots/go_bot/parser"
 )
 
-var mapp = []Parser{
-	SaveDeputiesFromSearch{},
-	SaveDeputiesFromXML{},
-	SaveDeputiesAbout{},
-	// SaveDeputiesQuotas{},
-	SaveDeputiesFromTransparenciaBrasil{},
-	SaveSenatorsFromIndex{},
-}
+var bots = []Parser{}
 
 var DB models.Database
 
@@ -28,7 +22,14 @@ func main() {
 	StartDispatcher(6)
 	DB = models.New()
 
-	max := len(mapp)
+	addBot(SaveDeputiesFromSearch{})
+	addBot(SaveDeputiesFromXML{})
+	addBot(SaveDeputiesAbout{})
+	addBot(SaveDeputiesFromTransparenciaBrasil{})
+	addBot(SaveSenatorsFromIndex{})
+	addBot(SavePartiesFromTSE{})
+
+	max := len(bots)
 	c := 0
 
 	go func() {
@@ -37,7 +38,7 @@ func main() {
 				time.Sleep(1 * time.Hour)
 				c = 0
 			}
-			Collector(mapp[c], reflect.ValueOf(mapp[c]).Type().Name())
+			Collector(bots[c], reflect.ValueOf(bots[c]).Type().Name())
 			c++
 		}
 	}()
@@ -48,6 +49,23 @@ func main() {
 
 	log.Println("Finishing....")
 	close(WorkerQueue)
+}
+
+func addBot(bot Parser) {
+	onlyVar := strings.Split(os.Getenv("ONLY_BOT"), ",")
+	botName := reflect.ValueOf(bot).Type().Name()
+
+	if len(onlyVar) > 0 {
+		for _, b := range onlyVar {
+			if b != "" && b == botName {
+				log.Println(b)
+				bots = append(bots, bot)
+			}
+		}
+		return
+	}
+
+	bots = append(bots, bot)
 }
 
 // ---
