@@ -2,3 +2,4 @@ camarabook-data
 .projectrc
 tmp
 pkg
+go_bot
