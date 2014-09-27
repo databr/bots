@@ -71,7 +71,7 @@ func titlelize(s string) string {
 	return strings.Title(strings.ToLower(s))
 }
 
-func createMembermeship(DB models.Database, member, organization models.Rel, source models.Source) {
+func createMembermeship(DB models.Database, member, organization models.Rel, source models.Source, role string, label string) {
 	query := bson.M{
 		"member.id":       member.Id,
 		"organization.id": organization.Id,
@@ -87,6 +87,8 @@ func createMembermeship(DB models.Database, member, organization models.Rel, sou
 			"member":       member,
 			"organization": organization,
 			"source":       source,
+			"role":         role,
+			"label":        label,
 		},
 	}, &models.Membership{})
 }

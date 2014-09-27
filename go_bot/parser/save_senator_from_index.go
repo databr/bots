@@ -153,7 +153,7 @@ func (self SaveSenatorsFromIndex) Run(DB models.Database) {
 		}, models.Rel{
 			Id:   partyId,
 			Link: LinkTo("parties", partyId),
-		}, source)
+		}, source, "Filiado", "Partido")
 
 		checkError(err)
 	})
