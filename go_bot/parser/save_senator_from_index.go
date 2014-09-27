@@ -62,8 +62,9 @@ func (self SaveSenatorsFromIndex) Run(DB models.Database) {
 			},
 		}, &models.Party{})
 
+		parliamenrianId := models.MakeUri(name)
 		q := bson.M{
-			"id": models.MakeUri(name),
+			"id": parliamenrianId,
 		}
 
 		re := regexp.MustCompile("paginst/senador(.+)a.asp")
@@ -145,6 +146,15 @@ func (self SaveSenatorsFromIndex) Run(DB models.Database) {
 				},
 			},
 		}, models.Parliamentarian{})
+
+		createMembermeship(DB, models.Rel{
+			Id:   parliamenrianId,
+			Link: LinkTo("parliamenrians", parliamenrianId),
+		}, models.Rel{
+			Id:   partyId,
+			Link: LinkTo("parties", partyId),
+		}, source)
+
 		checkError(err)
 	})
 }

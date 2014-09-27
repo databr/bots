@@ -43,11 +43,9 @@ func (p SaveDeputiesFromXML) Run(DB models.Database) {
 			},
 		}, &models.Party{})
 
-		//PartyId:    party.Id,
-		//State:      s.Find("uf").First().Text(),
-
+		parliamenrianId := models.MakeUri(name)
 		q := bson.M{
-			"id": models.MakeUri(name),
+			"id": parliamenrianId,
 		}
 		fullName := strings.Split(titlelize(s.Find("nome").First().Text()), " ")
 
@@ -98,6 +96,14 @@ func (p SaveDeputiesFromXML) Run(DB models.Database) {
 				},
 			},
 		}, &models.Parliamentarian{})
+
+		createMembermeship(DB, models.Rel{
+			Id:   parliamenrianId,
+			Link: LinkTo("parliamenrians", parliamenrianId),
+		}, models.Rel{
+			Id:   partyId,
+			Link: LinkTo("parties", partyId),
+		}, source)
 		checkError(err)
 	})
 }

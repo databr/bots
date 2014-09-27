@@ -5,9 +5,11 @@ import (
 	"encoding/hex"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/databr/api/models"
+	"gopkg.in/mgo.v2/bson"
 )
 
 var CACHE *memcache.Client
@@ -67,4 +69,28 @@ func deferedCache(url string) {
 
 func titlelize(s string) string {
 	return strings.Title(strings.ToLower(s))
+}
+
+func createMembermeship(DB models.Database, member, organization models.Rel, source models.Source) {
+	query := bson.M{
+		"member.id":       member.Id,
+		"organization.id": organization.Id,
+	}
+	DB.Upsert(query, bson.M{
+		"$setOnInsert": bson.M{
+			"createdat": time.Now(),
+		},
+		"$currentDate": bson.M{
+			"updatedat": true,
+		},
+		"$set": bson.M{
+			"member":       member,
+			"organization": organization,
+			"source":       source,
+		},
+	}, &models.Membership{})
+}
+
+func LinkTo(resource string, id string) string {
+	return "http://api.databr.io/v1/" + resource + "/" + id
 }
