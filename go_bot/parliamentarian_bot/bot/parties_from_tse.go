@@ -1,17 +1,19 @@
-package parser
+package bot
 
 import (
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/databr/api/database"
 	"github.com/databr/api/models"
+	"github.com/databr/bots/go_bot/parser"
 	"gopkg.in/mgo.v2/bson"
 )
 
 type SavePartiesFromTSE struct{}
 
-func (_ SavePartiesFromTSE) Run(DB models.Database) {
+func (_ SavePartiesFromTSE) Run(DB database.MongoDB) {
 	url := "http://www.tse.jus.br/partidos/partidos-politicos/registrados-no-tse"
 	source := models.Source{
 		Url:  url,
@@ -22,7 +24,7 @@ func (_ SavePartiesFromTSE) Run(DB models.Database) {
 	var e error
 
 	if doc, e = goquery.NewDocument(url); e != nil {
-		log.Critical(e.Error())
+		parser.Log.Critical(e.Error())
 	}
 
 	const (
@@ -37,7 +39,7 @@ func (_ SavePartiesFromTSE) Run(DB models.Database) {
 	doc.Find("#textoConteudo table tr").Each(func(i int, s *goquery.Selection) {
 		if s.Find(".titulo_tabela").Length() < 6 && s.Find("td").Length() > 1 {
 			info := s.Find("td")
-			log.Info("%s - %s - %s - %s - %s - %s",
+			parser.Log.Info("%s - %s - %s - %s - %s - %s",
 				info.Eq(IDX).Text(),
 				info.Eq(SIGLA_IDX).Text(),
 				info.Eq(NAME_IDX).Text(),
@@ -56,7 +58,7 @@ func (_ SavePartiesFromTSE) Run(DB models.Database) {
 				},
 				"$set": bson.M{
 					"id":   partyId,
-					"name": titlelize(info.Eq(NAME_IDX).Text()),
+					"name": parser.Titlelize(info.Eq(NAME_IDX).Text()),
 					"othernames": []bson.M{{
 						"name": info.Eq(SIGLA_IDX).Text(),
 					}},
@@ -71,7 +73,7 @@ func (_ SavePartiesFromTSE) Run(DB models.Database) {
 			if b {
 				docDetails, err := goquery.NewDocument(urlDetails)
 				if err != nil {
-					log.Critical(err.Error())
+					parser.Log.Critical(err.Error())
 				}
 
 				sourceDetails := models.Source{

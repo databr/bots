@@ -1,4 +1,4 @@
-package parser
+package bot
 
 import (
 	"errors"
@@ -8,7 +8,9 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/databr/api/database"
 	"github.com/databr/api/models"
+	"github.com/databr/bots/go_bot/parser"
 	"github.com/databr/go-popolo"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -16,7 +18,7 @@ import (
 type SaveSenatorsFromIndex struct {
 }
 
-func (self SaveSenatorsFromIndex) Run(DB models.Database) {
+func (self SaveSenatorsFromIndex) Run(DB database.MongoDB) {
 	indexURL := "http://www.senado.gov.br"
 
 	source := models.Source{
@@ -28,7 +30,7 @@ func (self SaveSenatorsFromIndex) Run(DB models.Database) {
 	var e error
 
 	if doc, e = goquery.NewDocument(indexURL + "/senadores/"); e != nil {
-		log.Critical(e.Error())
+		parser.Log.Critical(e.Error())
 	}
 
 	doc.Find("#senadores tbody tr").Each(func(i int, s *goquery.Selection) {
@@ -36,7 +38,7 @@ func (self SaveSenatorsFromIndex) Run(DB models.Database) {
 		name := data.Eq(0).Text()
 		link, okLink := data.Eq(0).Find("a").Attr("href")
 		if !okLink {
-			checkError(errors.New("link not found"))
+			parser.CheckError(errors.New("link not found"))
 		} else {
 			link = indexURL + link
 		}
@@ -108,11 +110,11 @@ func (self SaveSenatorsFromIndex) Run(DB models.Database) {
 				"shortname": models.MakeUri(name),
 			},
 		}, models.Parliamentarian{})
-		checkError(err)
+		parser.CheckError(err)
 
 		docDetails, e := goquery.NewDocument(link)
 		if e != nil {
-			log.Critical(e.Error())
+			parser.Log.Critical(e.Error())
 		}
 		info := docDetails.Find(".dadosSenador b")
 		birthdateA := strings.Split(info.Eq(1).Text(), "/")
@@ -147,14 +149,14 @@ func (self SaveSenatorsFromIndex) Run(DB models.Database) {
 			},
 		}, models.Parliamentarian{})
 
-		createMembermeship(DB, models.Rel{
+		parser.CreateMembermeship(DB, models.Rel{
 			Id:   parliamenrianId,
-			Link: LinkTo("parliamenrians", parliamenrianId),
+			Link: parser.LinkTo("parliamenrians", parliamenrianId),
 		}, models.Rel{
 			Id:   partyId,
-			Link: LinkTo("parties", partyId),
+			Link: parser.LinkTo("parties", partyId),
 		}, source, "Filiado", "Partido")
 
-		checkError(err)
+		parser.CheckError(err)
 	})
 }

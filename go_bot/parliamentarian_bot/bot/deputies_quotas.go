@@ -1,4 +1,4 @@
-package parser
+package bot
 
 import (
 	"strconv"
@@ -6,7 +6,9 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/databr/api/database"
 	"github.com/databr/api/models"
+	"github.com/databr/bots/go_bot/parser"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -18,13 +20,13 @@ const (
 type SaveDeputiesQuotas struct {
 }
 
-func (p SaveDeputiesQuotas) Run(DB models.Database) {
+func (p SaveDeputiesQuotas) Run(DB database.MongoDB) {
 	url := "http://www.camara.gov.br/cota-parlamentar/pg-cota-lista-deputados.jsp"
 
-	if isCached(url) {
+	if parser.IsCached(url) {
 		return
 	}
-	defer deferedCache(url)
+	defer parser.DeferedCache(url)
 
 	doc, err := goquery.NewDocument(url)
 	if err != nil {
@@ -43,15 +45,15 @@ func (p SaveDeputiesQuotas) Run(DB models.Database) {
 	})
 }
 
-func getPages(url, id string, DB models.Database) {
-	if isCached(url) {
+func getPages(url, id string, DB database.MongoDB) {
+	if parser.IsCached(url) {
 		return
 	}
-	defer deferedCache(url)
+	defer parser.DeferedCache(url)
 
 	doc, err := goquery.NewDocument(url)
 	if err != nil {
-		log.Critical("Problems %s", url)
+		parser.Log.Critical("Problems %s", url)
 		return
 	}
 
@@ -72,16 +74,16 @@ func getPages(url, id string, DB models.Database) {
 	})
 }
 
-func getQuotaPage(id, url string, DB models.Database) {
-	if isCached(url) {
+func getQuotaPage(id, url string, DB database.MongoDB) {
+	if parser.IsCached(url) {
 		return
 	}
-	defer deferedCache(url)
+	defer parser.DeferedCache(url)
 
 	<-time.After(2 * time.Second)
 	doc, err := goquery.NewDocument(url)
 	if err != nil {
-		log.Error(err.Error(), url)
+		parser.Log.Error(err.Error(), url)
 		return
 	}
 
@@ -111,7 +113,7 @@ func getQuotaPage(id, url string, DB models.Database) {
 				"uri":  companyUri,
 			},
 		}, models.Company{})
-		checkError(err)
+		parser.CheckError(err)
 
 		switch len(data.Nodes) {
 		case 4:
@@ -126,7 +128,7 @@ func getQuotaPage(id, url string, DB models.Database) {
 			value = strings.TrimSpace(strings.Replace(value, ",", ".", -1))
 			valueF, _ := strconv.ParseFloat(value, 64)
 
-			log.Debug(orderN)
+			parser.Log.Debug(orderN)
 
 			orderNS := strings.Split(orderN, ":")
 			var ticket string
@@ -146,7 +148,7 @@ func getQuotaPage(id, url string, DB models.Database) {
 					"ticket":         ticket,
 				},
 			}, models.Quota{})
-			checkError(err)
+			parser.CheckError(err)
 
 		default:
 			panic(data.Text())

@@ -6,7 +6,7 @@ import (
 	"github.com/op/go-logging"
 )
 
-var log = logging.MustGetLogger("camarabook")
+var Log = logging.MustGetLogger("camarabook")
 
 var format = "%{color}%{time:15:04:05.000000} ▶ %{level:.4s} %{id:03x}%{color:reset} %{message}"
 
@@ -17,7 +17,7 @@ func init() {
 	logging.SetFormatter(logging.MustStringFormatter(format))
 
 	if err != nil {
-		log.Fatal(err)
+		Log.Fatal(err)
 	}
 	logging.SetBackend(logBackend, syslogBackend)
 

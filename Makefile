@@ -5,18 +5,15 @@ help:
 
 no_targets__:
 
-pkg/go-bot-linux-amd64:
-	cd go_bot && GOOS=linux GOARCH=amd64 go build -o ../pkg/go-bot-linux-amd64
+pkg/parliamentarian_bot:
+	cd go_bot/parliamentarian_bot && GOOS=linux GOARCH=amd64 go build -o ../../pkg/parliamentarian_bot
 
 clean:
 	rm -Rf pkg/*
 
-go_bots: clean pkg/go-bot-linux-amd64
+parliamentarian_bot: clean pkg/parliamentarian_bot
 
-deploy_go: go_bots
-	rsync -Pavh pkg/go-bot-linux-amd64 $(DATABR_BOT_MACHINE):/usr/local/bin/go-bot
-	ssh $(DATABR_BOT_MACHINE) 'restart go-bot'
+deploy_go: parliamentarian_bot
+	rsync -Pavh pkg/parliamentarian_bot $(DATABR_BOT_MACHINE):/usr/local/bin/parliamentarian_bot
 
 deploy: deploy_go
-
-

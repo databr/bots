@@ -1,4 +1,4 @@
-package parser
+package bot
 
 import (
 	"strconv"
@@ -6,7 +6,9 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/databr/api/database"
 	"github.com/databr/api/models"
+	"github.com/databr/bots/go_bot/parser"
 	"github.com/databr/go-popolo"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -14,7 +16,7 @@ import (
 type SaveDeputiesAbout struct {
 }
 
-func (p SaveDeputiesAbout) Run(DB models.Database) {
+func (p SaveDeputiesAbout) Run(DB database.MongoDB) {
 	var ds []models.Parliamentarian
 
 	DB.FindAll(&ds)
@@ -27,7 +29,7 @@ func (p SaveDeputiesAbout) Run(DB models.Database) {
 
 		bioURL := "http://www2.camara.leg.br/deputados/pesquisa/layouts_deputados_biografia?pk=" + id
 
-		if isCached(bioURL) {
+		if parser.IsCached(bioURL) {
 			continue
 		}
 
@@ -40,7 +42,7 @@ func (p SaveDeputiesAbout) Run(DB models.Database) {
 		var e error
 
 		if doc, e = goquery.NewDocument(bioURL); e != nil {
-			log.Critical(e.Error())
+			parser.Log.Critical(e.Error())
 		}
 
 		bio := doc.Find("#bioDeputado .bioOutros")
@@ -83,16 +85,16 @@ func (p SaveDeputiesAbout) Run(DB models.Database) {
 		case "74474":
 			year = 1940
 		default:
-			log.Debug("(%s) %s", id, birthdateA)
+			parser.Log.Debug("(%s) %s", id, birthdateA)
 			if len(birthdateA) == 0 {
-				log.Fatalf("Error on %s", bioURL)
+				parser.Log.Fatalf("Error on %s", bioURL)
 				continue
 			}
 			year, _ = strconv.Atoi(birthdateA[2])
 		}
 
 		if len(birthdateA) == 0 {
-			log.Fatalf("Error on %s", bioURL)
+			parser.Log.Fatalf("Error on %s", bioURL)
 			continue
 		}
 
@@ -118,8 +120,8 @@ func (p SaveDeputiesAbout) Run(DB models.Database) {
 				"sources": source,
 			},
 		}, models.Parliamentarian{})
-		checkError(err)
-		cacheURL(bioURL)
+		parser.CheckError(err)
+		parser.CacheURL(bioURL)
 	}
 }
 

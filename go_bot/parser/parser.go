@@ -8,9 +8,23 @@ import (
 	"time"
 
 	"github.com/bradfitz/gomemcache/memcache"
+	"github.com/databr/api/database"
 	"github.com/databr/api/models"
 	"gopkg.in/mgo.v2/bson"
 )
+
+//import (
+//"crypto/md5"
+//"encoding/hex"
+//"os"
+//"strings"
+//"time"
+
+//""
+//"github.com/databr/api/database"
+//"github.com/databr/api/models"
+//"gopkg.in/mgo.v2/bson"
+//)
 
 var CACHE *memcache.Client
 
@@ -24,11 +38,7 @@ func init() {
 	}
 }
 
-type Parser interface {
-	Run(DB models.Database)
-}
-
-func checkError(err error) {
+func CheckError(err error) {
 	if err != nil {
 		panic(err)
 	}
@@ -40,7 +50,7 @@ func urlToKey(url string) string {
 	return hex.EncodeToString(hasher.Sum(nil))
 }
 
-func isCached(url string) bool {
+func IsCached(url string) bool {
 	key := urlToKey(url)
 	_, err := CACHE.Get(key)
 	if err == nil {
@@ -49,7 +59,7 @@ func isCached(url string) bool {
 	return false
 }
 
-func cacheURL(url string) {
+func CacheURL(url string) {
 	key := urlToKey(url)
 	CACHE.Set(&memcache.Item{
 		Key:        key,
@@ -58,20 +68,20 @@ func cacheURL(url string) {
 	})
 }
 
-func deferedCache(url string) {
+func DeferedCache(url string) {
 	if err := recover(); err != nil {
-		// os.Exit(1)
-		log.Error("%s", err)
+		//os.Exit(1)
+		Log.Error("%s", err)
 	} else {
-		cacheURL(url)
+		CacheURL(url)
 	}
 }
 
-func titlelize(s string) string {
+func Titlelize(s string) string {
 	return strings.Title(strings.ToLower(s))
 }
 
-func createMembermeship(DB models.Database, member, organization models.Rel, source models.Source, role string, label string) {
+func CreateMembermeship(DB database.MongoDB, member, organization models.Rel, source models.Source, role string, label string) {
 	query := bson.M{
 		"member.id":       member.Id,
 		"organization.id": organization.Id,
