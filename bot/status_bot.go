@@ -35,7 +35,7 @@ func (_ StatusBot) Run(db database.MongoDB) {
 		nameImage, _ := nameTD.Find("img").Attr("src")
 		lineNumber := strings.Split(strings.Split(nameImage, "-")[1], ".")[0]
 
-		lineName := "Linha " + lineNumber + "-" + parser.Titlelize(strings.TrimSpace(strings.Split(nameTD.Text(), "-")[1]))
+		lineName := "Linha " + lineNumber + "-" + toUtf8([]byte(parser.Titlelize(strings.TrimSpace(strings.Split(nameTD.Text(), "-")[1]))))
 
 		saveStatus(db, lineName, toUtf8([]byte(status)))
 	})
