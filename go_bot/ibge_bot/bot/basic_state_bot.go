@@ -102,12 +102,12 @@ func (self BasicStateBot) ParseState(db database.MongoDB, stateUrl string) {
 			"updatedat": true,
 		},
 		"$set": bson.M{
-			"name":                     STATES_NAME[id],
-			"capital":                  capital,
-			"population":               population2014,
-			"area":                     area,
-			"population_density":       populationDensity,
-			"number_of_municipalities": numberOfMunicipalities,
+			"name":                   STATES_NAME[id],
+			"capital":                capital,
+			"population":             population2014,
+			"area":                   area,
+			"populationdensity":      populationDensity,
+			"numberofmunicipalities": numberOfMunicipalities,
 		},
 	}, models.State{})
 	parser.CheckError(err)
