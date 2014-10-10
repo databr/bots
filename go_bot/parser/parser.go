@@ -106,3 +106,12 @@ func CreateMembermeship(DB database.MongoDB, member, organization models.Rel, so
 func LinkTo(resource string, id string) string {
 	return "http://api.databr.io/v1/" + resource + "/" + id
 }
+
+func ToUtf8(iso8859_1 string) string {
+	iso8859_1_buf := []byte(iso8859_1)
+	buf := make([]rune, len(iso8859_1_buf))
+	for i, b := range iso8859_1_buf {
+		buf[i] = rune(b)
+	}
+	return string(buf)
+}
