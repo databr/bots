@@ -9,4 +9,5 @@ func main() {
 	mongo := database.NewMongoDB()
 
 	bot.BasicStateBot{}.Run(mongo)
+	bot.BasicCityBot{}.Run(mongo)
 }
