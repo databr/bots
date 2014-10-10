@@ -35,9 +35,9 @@ func (_ StatusBot) Run(db database.MongoDB) {
 		nameImage, _ := nameTD.Find("img").Attr("src")
 		lineNumber := strings.Split(strings.Split(nameImage, "-")[1], ".")[0]
 
-		lineName := "Linha " + lineNumber + "-" + toUtf8([]byte(parser.Titlelize(strings.TrimSpace(strings.Split(nameTD.Text(), "-")[1]))))
+		lineName := "Linha " + lineNumber + "-" + parser.ToUtf8(parser.Titlelize(strings.TrimSpace(strings.Split(nameTD.Text(), "-")[1])))
 
-		saveStatus(db, lineName, toUtf8([]byte(status)))
+		saveStatus(db, lineName, parser.ToUtf8(status))
 	})
 }
 
@@ -79,12 +79,4 @@ func saveStatus(db database.MongoDB, lineName, status string) {
 	parser.Log.Info("-- Created Status to " + lineName)
 	parser.Log.Info("Status: " + status)
 	parser.Log.Info("------")
-}
-
-func toUtf8(iso8859_1_buf []byte) string {
-	buf := make([]rune, len(iso8859_1_buf))
-	for i, b := range iso8859_1_buf {
-		buf[i] = rune(b)
-	}
-	return string(buf)
 }
