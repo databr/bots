@@ -16,17 +16,22 @@ type StatusBot struct{}
 func (_ StatusBot) Run(db database.MongoDB) {
 	// Metro SP
 	doc, err := goquery.NewDocument("http://www.metro.sp.gov.br/sistemas/direto-do-metro-via4/index.aspx")
-
 	parser.CheckError(err)
+	metroSource := models.Source{
+		Url: "http://www.metro.sp.gov.br/sistemas/direto-do-metro-via4/index.aspx",
+	}
 
 	doc.Find("#diretoMetro ul li").Each(func(_ int, s *goquery.Selection) {
 		lineName := s.Find(".linha").Text()
 		status := strings.TrimSpace(s.Find(".status").Text())
-		saveStatus(db, lineName, status)
+		saveStatus(db, lineName, status, metroSource)
 	})
 
 	doc, err = goquery.NewDocument("http://www.cptm.sp.gov.br/Central-Relacionamento/situacao-linhas.asp")
 	parser.CheckError(err)
+	cptmSource := models.Source{
+		Url: "http://www.cptm.sp.gov.br/Central-Relacionamento/situacao-linhas.asp",
+	}
 
 	doc.Find(".linhaStatus").Each(func(_ int, s *goquery.Selection) {
 		data := s.Find("td")
@@ -37,11 +42,11 @@ func (_ StatusBot) Run(db database.MongoDB) {
 
 		lineName := "Linha " + lineNumber + "-" + parser.ToUtf8(parser.Titlelize(strings.TrimSpace(strings.Split(nameTD.Text(), "-")[1])))
 
-		saveStatus(db, lineName, parser.ToUtf8(status))
+		saveStatus(db, lineName, parser.ToUtf8(status), cptmSource)
 	})
 }
 
-func saveStatus(db database.MongoDB, lineName, status string) {
+func saveStatus(db database.MongoDB, lineName, status string, source models.Source) {
 	uri := models.MakeUri(lineName)
 
 	q := bson.M{"id": uri}
@@ -55,6 +60,9 @@ func saveStatus(db database.MongoDB, lineName, status string) {
 		},
 		"$set": bson.M{
 			"name": lineName,
+		},
+		"$addToSet": bson.M{
+			"sources": source,
 		},
 	}, models.Line{})
 
@@ -77,6 +85,9 @@ func saveStatus(db database.MongoDB, lineName, status string) {
 		"$set": bson.M{
 			"status":  status,
 			"line_id": uri,
+		},
+		"$addToSet": bson.M{
+			"sources": source,
 		},
 	}, models.Status{})
 	parser.CheckError(err)
