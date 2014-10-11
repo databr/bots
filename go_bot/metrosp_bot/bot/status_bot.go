@@ -59,8 +59,14 @@ func saveStatus(db database.MongoDB, lineName, status string) {
 	}, models.Line{})
 
 	parser.CheckError(err)
+	var statusOld models.Status
+	err = db.FindOne(bson.M{"line_id": uri}, &statusOld)
 
-	statusQ := bson.M{"line_id": uri}
+	statusQ := bson.M{"line_id": uri, "_id": bson.NewObjectId()}
+	if err == nil && statusOld.Status == status {
+		statusQ = bson.M{"_id": statusOld.Id, "line_id": uri}
+	}
+
 	_, err = db.Upsert(statusQ, bson.M{
 		"$setOnInsert": bson.M{
 			"createdat": time.Now(),
