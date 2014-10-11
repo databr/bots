@@ -32,6 +32,9 @@ func (self BasicCityBot) Run(db database.MongoDB) {
 func (self BasicCityBot) getCitiesData(db database.MongoDB, url string, stateID string) {
 	doc, err := goquery.NewDocument(url)
 	parser.CheckError(err)
+	source := models.Source{
+		Url: url,
+	}
 
 	doc.Find("#municipios tbody tr").Each(func(_ int, s *goquery.Selection) {
 		data := s.Find("td")
@@ -55,6 +58,9 @@ func (self BasicCityBot) getCitiesData(db database.MongoDB, url string, stateID 
 				"area":       data.Eq(4).Text(),
 				"density":    data.Eq(5).Text(),
 				"pib":        data.Eq(6).Text(),
+			},
+			"$addToSet": bson.M{
+				"sources": source,
 			},
 		}, models.City{})
 		parser.CheckError(err)
