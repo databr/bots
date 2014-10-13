@@ -78,7 +78,8 @@ func (self BasicStateBot) ParseState(db database.MongoDB, stateUrl string) {
 	doc, err := goquery.NewDocument(stateUrl)
 	parser.CheckError(err)
 	source := models.Source{
-		Url: stateUrl,
+		Url:  stateUrl,
+		Note: "ibge",
 	}
 
 	data := doc.Find("#sintese tr")
@@ -108,7 +109,7 @@ func (self BasicStateBot) ParseState(db database.MongoDB, stateUrl string) {
 		},
 		"$set": bson.M{
 			"name":                   STATES_NAME[id],
-			"capital":                capital,
+			"capitalid":              models.MakeUri(capital),
 			"population":             toFloat(population2014),
 			"area":                   toFloat(area),
 			"populationdensity":      toFloat(populationDensity),
