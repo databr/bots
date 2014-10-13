@@ -3,7 +3,6 @@ package parser
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"os"
 	"strings"
 	"time"
 
@@ -13,29 +12,10 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-//import (
-//"crypto/md5"
-//"encoding/hex"
-//"os"
-//"strings"
-//"time"
-
-//""
-//"github.com/databr/api/database"
-//"github.com/databr/api/models"
-//"gopkg.in/mgo.v2/bson"
-//)
-
 var CACHE *memcache.Client
 
 func init() {
-	memcacheURL := os.Getenv("MEMCACHE_URL")
-	CACHE = memcache.New(memcacheURL)
-	CACHE.Set(&memcache.Item{Key: "test", Value: []byte("tested")})
-	_, err := CACHE.Get("test")
-	if err != nil && err != memcache.ErrCacheMiss {
-		panic(err)
-	}
+	CACHE = database.NewMemcache()
 }
 
 func CheckError(err error) {
