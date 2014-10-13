@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/databr/api/database"
 	"github.com/databr/api/models"
+	memcache "github.com/dustin/gomemcached/client"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -32,7 +32,7 @@ func urlToKey(url string) string {
 
 func IsCached(url string) bool {
 	key := urlToKey(url)
-	_, err := CACHE.Get(key)
+	_, err := CACHE.Get(0, key)
 	if err == nil {
 		return true
 	}
@@ -41,11 +41,7 @@ func IsCached(url string) bool {
 
 func CacheURL(url string) {
 	key := urlToKey(url)
-	CACHE.Set(&memcache.Item{
-		Key:        key,
-		Value:      []byte("true"),
-		Expiration: (60 * 60) * 24,
-	})
+	CACHE.Set(0, key, 5, (60*60)*24, []byte("true"))
 }
 
 func DeferedCache(url string) {
