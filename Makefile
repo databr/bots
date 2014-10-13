@@ -1,31 +1,31 @@
-.PHONY: no_targets__ help
+build: build_go
 
-help:
-	sh -c "$(MAKE) -p no_targets__ | awk -F':' '/^[a-zA-Z0-9][^\$$#\/\\t=]*:([^=]|$$)/ {split(\$$1,A,/ /);for(i in A)print A[i]}' | grep -v '__\$$' | sort"
-
-no_targets__:
-
-pkg/parliamentarian_bot:
-	cd go_bot/parliamentarian_bot && GOOS=linux GOARCH=amd64 go build -o ../../pkg/parliamentarian_bot
-
-pkg/metrosp_bot:
-	cd go_bot/metrosp_bot && GOOS=linux GOARCH=amd64 go build -o ../../pkg/metrosp_bot
-
-pkg/ibge_bot:
-	cd go_bot/ibge_bot && GOOS=linux GOARCH=amd64 go build -o ../../pkg/ibge_bot
+build_go: clean parliamentarian_bot metrosp_bot ibge_bot
 
 clean:
-	rm -Rf pkg/*
+	@rm -Rf pkg/*
 
-parliamentarian_bot: clean pkg/parliamentarian_bot
+pkg/parliamentarian_bot:
+	cd go_bot/parliamentarian_bot && go build -o ../../pkg/parliamentarian_bot
+pkg/metrosp_bot:
+	cd go_bot/metrosp_bot && go build -o ../../pkg/metrosp_bot
+pkg/ibge_bot:
+	cd go_bot/ibge_bot && go build -o ../../pkg/ibge_bot
 
-metrosp_bot: clean pkg/metrosp_bot
+parliamentarian_bot: pkg/parliamentarian_bot
 
-ibge_bot: clean pkg/ibge_bot
+metrosp_bot: pkg/metrosp_bot
 
-deploy_go: parliamentarian_bot metrosp_bot ibge_bot
+ibge_bot: pkg/ibge_bot
+
+deploy_go: build_go
+	goupx pkg/parliamentarian_bot
+	goupx pkg/metrosp_bot
+	goupx pkg/ibge_bot
+
 	rsync -Pavh pkg/parliamentarian_bot $(DATABR_BOT_MACHINE):/usr/local/bin/parliamentarian_bot
 	rsync -Pavh pkg/metrosp_bot $(DATABR_BOT_MACHINE):/usr/local/bin/metrosp_bot
 	rsync -Pavh pkg/ibge_bot $(DATABR_BOT_MACHINE):/usr/local/bin/ibge_bot
 
-deploy: deploy_go
+deploy:
+	@make GOARCH=amd64 GOOS=linux deploy_go
