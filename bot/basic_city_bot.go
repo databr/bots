@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"strconv"
 	"sync"
 	"time"
 
@@ -33,7 +34,8 @@ func (self BasicCityBot) getCitiesData(db database.MongoDB, url string, stateID 
 	doc, err := goquery.NewDocument(url)
 	parser.CheckError(err)
 	source := models.Source{
-		Url: url,
+		Url:  url,
+		Note: "ibge",
 	}
 
 	doc.Find("#municipios tbody tr").Each(func(_ int, s *goquery.Selection) {
@@ -42,7 +44,10 @@ func (self BasicCityBot) getCitiesData(db database.MongoDB, url string, stateID 
 		name := data.Eq(0).Text()
 		parser.Log.Debug("Salving: " + name + " (" + stateID + ")")
 		id := models.MakeUri(name)
-		q := bson.M{"id": id, "state_id": stateID}
+
+		ibgecode, _ := strconv.Atoi(data.Eq(1).Text())
+
+		q := bson.M{"id": id, "stateid": stateID}
 		_, err = db.Upsert(q, bson.M{
 			"$setOnInsert": bson.M{
 				"createdat": time.Now(),
@@ -52,12 +57,12 @@ func (self BasicCityBot) getCitiesData(db database.MongoDB, url string, stateID 
 			},
 			"$set": bson.M{
 				"name":       name,
-				"ibge_code":  data.Eq(1).Text(),
+				"ibgecode":   ibgecode,
 				"gentile":    data.Eq(2).Text(),
-				"population": data.Eq(3).Text(),
-				"area":       data.Eq(4).Text(),
-				"density":    data.Eq(5).Text(),
-				"pib":        data.Eq(6).Text(),
+				"population": toFloat(data.Eq(3).Text()),
+				"area":       toFloat(data.Eq(4).Text()),
+				"density":    toFloat(data.Eq(5).Text()),
+				"pib":        toFloat(data.Eq(6).Text()),
 			},
 			"$addToSet": bson.M{
 				"sources": source,
