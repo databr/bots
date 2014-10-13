@@ -3,6 +3,8 @@ package bot
 import (
 	"log"
 	"net/url"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -89,7 +91,7 @@ func (self BasicStateBot) ParseState(db database.MongoDB, stateUrl string) {
 	population2010 := data.Eq(2).Find(".total").Text()
 	area := data.Eq(3).Find(".total").Text()
 	populationDensity := data.Eq(4).Find(".total").Text()
-	numberOfMunicipalities := data.Eq(5).Find(".total").Text()
+	numberOfMunicipalities, _ := strconv.Atoi(data.Eq(5).Find(".total").Text())
 
 	log.Println(id, capital, population2014, population2010, area, populationDensity, numberOfMunicipalities)
 
@@ -107,9 +109,9 @@ func (self BasicStateBot) ParseState(db database.MongoDB, stateUrl string) {
 		"$set": bson.M{
 			"name":                   STATES_NAME[id],
 			"capital":                capital,
-			"population":             population2014,
-			"area":                   area,
-			"populationdensity":      populationDensity,
+			"population":             toFloat(population2014),
+			"area":                   toFloat(area),
+			"populationdensity":      toFloat(populationDensity),
 			"numberofmunicipalities": numberOfMunicipalities,
 		},
 		"$addToSet": bson.M{
@@ -117,4 +119,10 @@ func (self BasicStateBot) ParseState(db database.MongoDB, stateUrl string) {
 		},
 	}, models.State{})
 	parser.CheckError(err)
+}
+
+func toFloat(n string) float64 {
+	n = strings.Replace(strings.Replace(n, ".", "", -1), ",", ".", -1)
+	f, _ := strconv.ParseFloat(n, 64)
+	return f
 }
