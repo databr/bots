@@ -8,7 +8,7 @@ import (
 func main() {
 	mongo := database.NewMongoDB()
 
-	bot.LineBot{}.Run(mongo)
 	bot.StationBot{}.Run(mongo)
+	bot.LineBot{}.Run(mongo)
 	bot.StatusBot{}.Run(mongo)
 }
