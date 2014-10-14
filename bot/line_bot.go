@@ -14,7 +14,7 @@ type LineBot struct{}
 
 func (_ LineBot) Run(db database.MongoDB) {
 	LineColor("linha1azul", "#1a5ba3", db)
-	LineColor("linha2verde", "##008569", db)
+	LineColor("linha2verde", "#008569", db)
 	LineColor("linha3vermelha", "#f04d43", db)
 	LineColor("linha4amarela", "#ffd527", db)
 	LineColor("linha5lilas", "#a84f9c", db)
