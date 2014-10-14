@@ -27,7 +27,7 @@ func (_ LineBot) Run(db database.MongoDB) {
 }
 
 func LineColor(uri, hex string, db database.MongoDB) {
-	q := bson.M{"uri": uri}
+	q := bson.M{"id": uri}
 
 	c, _ := colorful.Hex(hex)
 	r, g, b := c.RGB255()

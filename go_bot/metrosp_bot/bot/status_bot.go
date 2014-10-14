@@ -56,7 +56,7 @@ func saveStatus(db database.MongoDB, lineName, status string, source models.Sour
 	result := re.FindStringSubmatch(lineName)
 	lineNumber, _ := strconv.Atoi(result[0])
 
-	q := bson.M{"uri": uri}
+	q := bson.M{"id": uri}
 
 	_, err := db.Upsert(q, bson.M{
 		"$setOnInsert": bson.M{
