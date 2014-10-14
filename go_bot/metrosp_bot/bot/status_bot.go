@@ -1,6 +1,9 @@
 package bot
 
 import (
+	"log"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -11,19 +14,21 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+var re = regexp.MustCompile(`(\d{1,2})`)
+
 type StatusBot struct{}
 
 func (_ StatusBot) Run(db database.MongoDB) {
 	// Metro SP
-	doc, err := goquery.NewDocument("http://www.metro.sp.gov.br/sistemas/direto-do-metro-via4/index.aspx")
+	doc, err := goquery.NewDocument("http://www.metro.sp.gov.br/Sistemas/direto-do-metro-via4/diretodoMetroHome.aspx")
 	parser.CheckError(err)
 	metroSource := models.Source{
-		Url: "http://www.metro.sp.gov.br/sistemas/direto-do-metro-via4/index.aspx",
+		Url: "http://www.metro.sp.gov.br/Sistemas/direto-do-metro-via4/diretodoMetroHome.aspx",
 	}
 
-	doc.Find("#diretoMetro ul li").Each(func(_ int, s *goquery.Selection) {
-		lineName := s.Find(".linha").Text()
-		status := strings.TrimSpace(s.Find(".status").Text())
+	doc.Find("ul li").Each(func(_ int, s *goquery.Selection) {
+		lineName := strings.TrimSpace(s.Find(".nomeDaLinha").Text())
+		status := strings.TrimSpace(s.Find(".statusDaLinha").Text())
 		saveStatus(db, lineName, status, metroSource)
 	})
 
@@ -48,8 +53,10 @@ func (_ StatusBot) Run(db database.MongoDB) {
 
 func saveStatus(db database.MongoDB, lineName, status string, source models.Source) {
 	uri := models.MakeUri(lineName)
+	result := re.FindStringSubmatch(lineName)
+	lineNumber, _ := strconv.Atoi(result[0])
 
-	q := bson.M{"id": uri}
+	q := bson.M{"uri": uri}
 
 	_, err := db.Upsert(q, bson.M{
 		"$setOnInsert": bson.M{
@@ -59,13 +66,15 @@ func saveStatus(db database.MongoDB, lineName, status string, source models.Sour
 			"updatedat": true,
 		},
 		"$set": bson.M{
-			"name": lineName,
+			"name":       lineName,
+			"linenumber": lineNumber,
 		},
 		"$addToSet": bson.M{
 			"sources": source,
 		},
 	}, models.Line{})
 
+	log.Println(uri)
 	parser.CheckError(err)
 	var statusOld models.Status
 	err = db.FindOne(bson.M{"line_id": uri}, &statusOld)
