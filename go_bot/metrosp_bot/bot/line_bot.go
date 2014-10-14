@@ -18,7 +18,7 @@ func (_ LineBot) Run(db database.MongoDB) {
 	LineColor("linha3vermelha", "#f04d43", db)
 	LineColor("linha4amarela", "#ffd527", db)
 	LineColor("linha5lilas", "#a84f9c", db)
-	LineColor("linha7rubi", " #B81D64", db)
+	LineColor("linha7rubi", "#B81D64", db)
 	LineColor("linha8diamante", "#8A8988", db)
 	LineColor("linha9esmeralda", "#009496", db)
 	LineColor("linha10turquesa", "#0088B0", db)
