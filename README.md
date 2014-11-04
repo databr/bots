@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/databr/bots.png?label=ready&title=Ready)](https://waffle.io/databr/bots)
 # Bots
 
 > [Trello com Tarefas](https://trello.com/b/3WLlqXpX/databr)
