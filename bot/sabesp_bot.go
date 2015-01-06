@@ -48,6 +48,11 @@ func getData(g string, db database.MongoDB) {
 
 		query := bson.M{"uri": uri, "granularity_letter": g}
 
+		source := models.Source{
+			Url:  "http://www.apolo11.com",
+			Note: "Apolo11",
+		}
+
 		_, err := db.Upsert(query, bson.M{
 			"$setOnInsert": bson.M{
 				"createdat": time.Now(),
@@ -61,6 +66,7 @@ func getData(g string, db database.MongoDB) {
 				"granularity_letter": g,
 				"granularity":        getGranularity(g),
 				"data":               data,
+				"source":             []models.Source{source},
 			},
 		}, models.Reservoir{})
 		parser.CheckError(err)
