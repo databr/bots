@@ -1,7 +1,6 @@
-[![Stories in Ready](https://badge.waffle.io/databr/bots.png?label=ready&title=Ready)](https://waffle.io/databr/bots)
 # Bots
 
-> [Trello com Tarefas](https://trello.com/b/3WLlqXpX/databr)
+Join us on IRC at #databr to chat with other databr maintainers! ([web access](http://webchat.freenode.net/?channels=databr))
 
 O projeto **Bots** é responsável pela coletar, tratar e relacionar os dados das diversas fontes.
 
