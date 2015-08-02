@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/databr/api/database"
-	"github.com/databr/bots/go_bot/metrosp_bot/bot"
+	"github.com/databr/metrosp-bot/bot"
 )
 
 func main() {
