@@ -3,6 +3,9 @@
 rm -Rf docker-compose.yml
 touch docker-compose.yml
 
+DATABASE_URL=${DATABASE_URL:-mongodb://mongo}
+
+
 shopt -s globstar
 for DIR in */; do
   if [ "$DIR" != "go_bot/" ]
@@ -20,18 +23,17 @@ for DIR in */; do
     - ENV='production'
     - PORT='80'
     - STATUSPAGEIO_ENABLE=false
-    - MONGO_URL=mongodb://mongo
+    - MONGO_URL=$DATABASE_URL
     - MONGO_DATABASE_NAME=databr
     - PRIVATE_KEY=abc
     - MEMCACHED_URL=memcached:11211
-  log_driver: 'syslog'
 "
     echo "${compose}" >> docker-compose.yml
   fi
 done
 
 echo "mongo:
-  image: mongo
+  image: mongo" >> docker-compose.yml
 
-memcached:
+echo "memcached:
   image: memcached" >> docker-compose.yml
