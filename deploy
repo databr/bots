@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -x
+set -e
+
+./generate
+
+rsync -a --exclude=.git . $BOT_HOST:/bots
+
+
