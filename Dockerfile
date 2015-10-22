@@ -1,9 +1,15 @@
 FROM golang
 
-ENV BOT_PATH /go/src/github.com/databr/metrosp-bot
+ENV BOT_PATH /go/src/github.com/databr/bots/metrosp-bot
 
-ADD . ${BOT_PATH}
+RUN go get github.com/databr/bots/go_bot/parser
 
-RUN cd ${BOT_PATH}
+RUN apt-get update && apt-get install rsyslog -y && rsyslogd
 
-CMD go run ${BOT_PATH}/runner.go
+COPY . ${BOT_PATH}
+
+WORKDIR $BOT_PATH
+
+RUN go get
+
+CMD rsyslogd && go run ${BOT_PATH}/runner.go
