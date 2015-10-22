@@ -1,0 +1,37 @@
+#!/bin/bash
+
+rm -Rf docker-compose.yml
+touch docker-compose.yml
+
+shopt -s globstar
+for DIR in */; do
+  if [ "$DIR" != "go_bot/" ]
+  then
+    empty=""
+    bot="${DIR///$empty}"
+
+    compose="$bot:
+  build: ./$bot
+  links:
+    - mongo:mongo
+    - memcached:memcached
+  environment:
+    - API_ROOT='http://api'
+    - ENV='production'
+    - PORT='80'
+    - STATUSPAGEIO_ENABLE=false
+    - MONGO_URL=mongodb://mongo
+    - MONGO_DATABASE_NAME=databr
+    - PRIVATE_KEY=abc
+    - MEMCACHED_URL=memcached:11211
+  log_driver: 'syslog'
+"
+    echo "${compose}" >> docker-compose.yml
+  fi
+done
+
+echo "mongo:
+  image: mongo
+
+memcached:
+  image: memcached" >> docker-compose.yml
