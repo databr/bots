@@ -19,7 +19,7 @@ for DIR in */; do
   $bot:
     build:
       context: ./$bot
-      dockerfile: ./$bot/Dockerfile
+      dockerfile: Dockerfile
     links:
       - mongo:mongo
       - memcached:memcached
