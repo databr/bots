@@ -4,6 +4,7 @@ rm -Rf docker-compose.yml
 touch docker-compose.yml
 
 DATABASE_URL=${DATABASE_URL:-mongodb://mongo}
+DATABASE_NAME=${DATABASE_NAME:-databr}
 
 echo "version: '2'
 services:" >> docker-compose.yml
@@ -29,7 +30,7 @@ for DIR in */; do
       - PORT='80'
       - STATUSPAGEIO_ENABLE=false
       - MONGO_URL=$DATABASE_URL
-      - MONGO_DATABASE_NAME=databr
+      - MONGO_DATABASE_NAME=$DATABASE_NAME
       - PRIVATE_KEY=abc
       - MEMCACHED_URL=memcached:11211"
     echo "${compose}" >> docker-compose.yml
