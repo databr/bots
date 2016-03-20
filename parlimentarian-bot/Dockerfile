@@ -1,6 +1,6 @@
 FROM golang
 
-ENV BOT_PATH /go/src/github.com/databr/bots/parliamentarian-bot
+ENV BOT_PATH /go/src/github.com/databr/parliamentarian-bot
 
 RUN go get github.com/databr/bots/go_bot/parser
 

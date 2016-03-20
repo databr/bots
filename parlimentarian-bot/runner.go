@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/databr/api/database"
-	"github.com/databr/bots/parliamentarian-bot/bot"
+	"github.com/databr/parliamentarian-bot/bot"
 	"github.com/databr/bots/go_bot/parser"
 )
 
