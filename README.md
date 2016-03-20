@@ -9,7 +9,8 @@ Join us on IRC at #databr to chat with other databr maintainers! ([web access](h
 * Crie seu bot, ao cria-lo lembre-se:
   * Seu Dockerfile deve ter o `CMD` que rode o bot
   * Formate seu bot para BUSCAR -> EXTRAIR -> SALVAR, ele não deve ser um daemon
-  * O banco de dados é acessivel pela variavel de ambiente `DATABASE_URL`
+  * O banco de dados é acessivel pela variavel de ambiente `MONGO_URL` (ex: user1:easypass@server/db)
+  * O nome da database está na variavel de ambiente `MONGO_DATABASE_NAME` (ex: database)
 * Fork esse projeto
 * Crie um branch com o nome do seu bot (ex: `git checkout -b metrosp-bot`)
 * Adicione seu projeto como subtree, como no exemplo abaixo:

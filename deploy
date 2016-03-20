@@ -3,7 +3,8 @@
 set -x
 set -e
 
-./generate
+
+MONGO_URL=$MONGO_URL MONGO_DATABASE_NAME=$MONGO_DATABASE_NAME ./generate
 
 rsync -a --exclude=.git . $BOT_HOST:/bots
 
