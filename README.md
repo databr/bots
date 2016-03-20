@@ -21,4 +21,4 @@ $ git push
 ```
 * Crie um pull request
 
-Em qualquer momento abra uma issues nesse repositorio ou me contate para que eu possa te ajudar, pelo twitter [_dukex](https://twitter.com/_dukex) ou email [duke at databr.io](duke@databr.io)
+Em qualquer momento abra uma issues nesse repositorio ou me contate para que eu possa te ajudar, pelo twitter [_dukex](https://twitter.com/_dukex) ou email [duke at databr.io](mailto:duke@databr.io)
