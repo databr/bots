@@ -18,6 +18,7 @@ func (p SaveDeputiesFromTransparenciaBrasil) Run(DB database.MongoDB) {
 	}
 
 	if parser.IsCached("http://dev.transparencia.org.br/") {
+		parser.Log.Info("SaveDeputiesFromTransparenciaBrasil Cached")
 		return
 	}
 	defer parser.DeferedCache("http://dev.transparencia.org.br/")

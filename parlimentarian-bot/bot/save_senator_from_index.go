@@ -21,6 +21,12 @@ type SaveSenatorsFromIndex struct {
 func (self SaveSenatorsFromIndex) Run(DB database.MongoDB) {
 	indexURL := "http://www.senado.gov.br"
 
+	if parser.IsCached(indexURL) {
+		parser.Log.Info("SaveSenatorsFromIndex Cached")
+		return
+	}
+	defer parser.DeferedCache(indexURL)
+
 	source := models.Source{
 		Url:  indexURL,
 		Note: "senado.gov.br website",

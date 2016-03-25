@@ -16,6 +16,12 @@ type SaveDeputiesFromXML struct{}
 func (p SaveDeputiesFromXML) Run(DB database.MongoDB) {
 	xmlURL := "http://www.camara.gov.br/SitCamaraWS/Deputados.asmx/ObterDeputados"
 
+	if parser.IsCached(xmlURL) {
+		parser.Log.Info("SaveDeputiesFromXML Cached")
+		return
+	}
+	defer parser.DeferedCache(xmlURL)
+
 	source := models.Source{
 		Url:  xmlURL,
 		Note: "Câmara API",

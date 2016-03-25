@@ -15,6 +15,13 @@ type SavePartiesFromTSE struct{}
 
 func (_ SavePartiesFromTSE) Run(DB database.MongoDB) {
 	url := "http://www.tse.jus.br/partidos/partidos-politicos/registrados-no-tse"
+
+	if parser.IsCached(url) {
+		parser.Log.Info("SavePartiesFromTSE Cached")
+		return
+	}
+	defer parser.DeferedCache(url)
+
 	source := models.Source{
 		Url:  url,
 		Note: "Tribunal Superior Eleitoral",
@@ -93,11 +100,10 @@ func (_ SavePartiesFromTSE) Run(DB database.MongoDB) {
 					"sources": []models.Source{sourceDetails},
 				})
 
-				zipcode := strings.Split(details.Eq(4).Text(), ":")[1]
 				contactdetails = append(contactdetails, bson.M{
 					"label":   "CEP",
 					"type":    "zipcode",
-					"value":   zipcode,
+					"value":   findZipcode(0, details),
 					"sources": []models.Source{sourceDetails},
 				})
 
@@ -142,18 +148,6 @@ func (_ SavePartiesFromTSE) Run(DB database.MongoDB) {
 					})
 				})
 
-				//Label:   "Endereço",
-				//Type:    "address",
-				//Value:   street,
-				//Sources: []models.Source{sourceDetails},
-				//}, {
-				//Label:   "CEP",
-				//Type:    "zipcode",
-				//Value:   zipcode,
-				//Sources: []models.Source{sourceDetails},
-				//}
-				//
-
 				data := bson.M{
 					"$setOnInsert": bson.M{
 						"createdat": time.Now(),
@@ -170,4 +164,18 @@ func (_ SavePartiesFromTSE) Run(DB database.MongoDB) {
 			}
 		}
 	})
+}
+
+func findZipcode(index int, details *goquery.Selection) string {
+	if details.Length() < index {
+		return ""
+	}
+
+	zipcode_p := strings.Split(details.Eq(index).Text(), ":")
+
+	if zipcode_p[0] == "CEP" {
+		return zipcode_p[1]
+	}
+
+	return findZipcode(index+1, details)
 }

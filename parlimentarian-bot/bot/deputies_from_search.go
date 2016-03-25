@@ -17,6 +17,12 @@ type SaveDeputiesFromSearch struct {
 func (p SaveDeputiesFromSearch) Run(DB database.MongoDB) {
 	searchURL := "http://www2.camara.leg.br/deputados/pesquisa"
 
+	if parser.IsCached(searchURL) {
+		parser.Log.Info("SaveDeputiesFromSearch Cached")
+		return
+	}
+	defer parser.DeferedCache(searchURL)
+
 	var doc *goquery.Document
 	var e error
 
