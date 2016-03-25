@@ -29,8 +29,8 @@ for DIR in */; do
       - ENV='production'
       - PORT='80'
       - STATUSPAGEIO_ENABLE=false
-      - MONGO_URL=$DATABASE_URL
-      - MONGO_DATABASE_NAME=$DATABASE_NAME
+      - DATABASE_URL=$DATABASE_URL
+      - DATABASE_NAME=$DATABASE_NAME
       - PRIVATE_KEY=abc
       - MEMCACHED_URL=memcached:11211"
     echo "${compose}" >> docker-compose.yml

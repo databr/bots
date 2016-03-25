@@ -4,7 +4,7 @@ set -x
 set -e
 
 
-MONGO_URL=$MONGO_URL MONGO_DATABASE_NAME=$MONGO_DATABASE_NAME ./generate
+DATABASE_URL=$DATABASE_URL DATABASE_NAME=$DATABASE_NAME ./generate
 
 rsync -a --exclude=.git . $BOT_HOST:/bots
 
