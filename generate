@@ -31,6 +31,8 @@ for DIR in */; do
       - STATUSPAGEIO_ENABLE=false
       - DATABASE_URL=$DATABASE_URL
       - DATABASE_NAME=$DATABASE_NAME
+      - MONGO_URL=$DATABASE_URL
+      - MONGO_DATABASE_NAME=$DATABASE_NAME
       - PRIVATE_KEY=abc
       - MEMCACHED_URL=memcached:11211"
     echo "${compose}" >> docker-compose.yml
