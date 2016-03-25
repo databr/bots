@@ -32,20 +32,31 @@ func (_ StatusBot) Run(db database.MongoDB) {
 		saveStatus(db, lineName, status, metroSource)
 	})
 
-	doc, err = goquery.NewDocument("http://www.cptm.sp.gov.br/Central-Relacionamento/situacao-linhas.asp")
+	// CPTM
+
+	doc, err = goquery.NewDocument("http://www.cptm.sp.gov.br/Pages/atendimento.aspx")
 	parser.CheckError(err)
 	cptmSource := models.Source{
 		Url: "http://www.cptm.sp.gov.br/Central-Relacionamento/situacao-linhas.asp",
 	}
 
-	doc.Find(".linhaStatus").Each(func(_ int, s *goquery.Selection) {
-		data := s.Find("td")
-		nameTD := data.Eq(0)
-		status := data.Eq(2).Text()
-		nameImage, _ := nameTD.Find("img").Attr("src")
-		lineNumber := strings.Split(strings.Split(nameImage, "-")[1], ".")[0]
+	lines := map[string]string{
+		"rubi":      "7",
+		"diamante":  "8",
+		"esmeralda": "9",
+		"turquesa":  "10",
+		"coral":     "11",
+		"safira":    "12",
+	}
 
-		lineName := "Linha " + lineNumber + "-" + parser.ToUtf8(parser.Titlelize(strings.TrimSpace(strings.Split(nameTD.Text(), "-")[1])))
+	doc.Find("#atendimento_consumidor .situacao_linhas .col-md-10 div.col-md-2").Each(func(_ int, s *goquery.Selection) {
+		class, _ := s.Attr("class")
+		uri := strings.TrimSpace(strings.Replace(class, "col-md-2", "", -1))
+		name := s.Find(".nome_linha")
+		lineNumber := lines[uri]
+		status := s.Find("[data-toggle='tooltip']").Text()
+
+		lineName := "Linha " + lineNumber + " - " + parser.Titlelize(strings.TrimSpace(name.Text()))
 
 		saveStatus(db, lineName, parser.ToUtf8(status), cptmSource)
 	})

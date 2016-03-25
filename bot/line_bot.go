@@ -36,6 +36,8 @@ func LineColor(uri, hex string, db database.MongoDB) {
 		"rgb": []int{int(r), int(g), int(b)},
 	}
 
+	parser.Log.Debug("Save", uri, "with color", color)
+
 	_, err := db.Upsert(q, bson.M{
 		"$setOnInsert": bson.M{
 			"createdat": time.Now(),
