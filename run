@@ -1,5 +1,5 @@
 #!/bin/bash
 
-docker-compose rm
-docker-compose build
-docker-compose up --abort-on-container-exit --force-recreate
+docker-compose rm -f $1
+docker-compose build $1
+docker-compose up --abort-on-container-exit --force-recreate $1
