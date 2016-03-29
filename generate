@@ -21,8 +21,6 @@ for DIR in */; do
     build:
       context: ./$bot
       dockerfile: Dockerfile
-    links:
-      - memcached:memcached
     environment:
       - API_ROOT='http://api'
       - ENV='production'
@@ -33,11 +31,7 @@ for DIR in */; do
       - MONGO_URL=$DATABASE_URL
       - MONGO_DATABASE_NAME=$DATABASE_NAME
       - PRIVATE_KEY=abc
-      - MEMCACHED_URL=memcached:11211"
+      - MEMCACHED_URL=localhost:11211"
     echo "${compose}" >> docker-compose.yml
   fi
 done
-
-echo "
-  memcached:
-    image: memcached" >> docker-compose.yml
