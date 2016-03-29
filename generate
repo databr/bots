@@ -22,7 +22,6 @@ for DIR in */; do
       context: ./$bot
       dockerfile: Dockerfile
     links:
-      - mongo:mongo
       - memcached:memcached
     environment:
       - API_ROOT='http://api'
@@ -38,10 +37,6 @@ for DIR in */; do
     echo "${compose}" >> docker-compose.yml
   fi
 done
-
-echo "
-  mongo:
-    image: mongo" >> docker-compose.yml
 
 echo "
   memcached:
