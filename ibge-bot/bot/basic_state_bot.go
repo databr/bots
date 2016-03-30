@@ -119,6 +119,7 @@ func (self BasicStateBot) ParseState(db database.MongoDB, stateUrl string) {
 			"sources": source,
 		},
 	}, models.State{})
+	doc = nil
 	parser.CheckError(err)
 }
 

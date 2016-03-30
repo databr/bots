@@ -2,7 +2,6 @@ package bot
 
 import (
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -19,15 +18,9 @@ const (
 type BasicCityBot struct{}
 
 func (self BasicCityBot) Run(db database.MongoDB) {
-	var wg sync.WaitGroup
 	for uf, _ := range STATES_NAME {
-		wg.Add(1)
-		go func(uf string) {
-			self.getCitiesData(db, CITIES_BASE_URL+uf, uf)
-			wg.Done()
-		}(uf)
+		self.getCitiesData(db, CITIES_BASE_URL+uf, uf)
 	}
-	wg.Wait()
 }
 
 func (self BasicCityBot) getCitiesData(db database.MongoDB, url string, stateID string) {
@@ -70,4 +63,6 @@ func (self BasicCityBot) getCitiesData(db database.MongoDB, url string, stateID 
 		}, models.City{})
 		parser.CheckError(err)
 	})
+
+	doc = nil
 }
