@@ -58,7 +58,7 @@ func (_ StatusBot) Run(db database.MongoDB) {
 
 		lineName := "Linha " + lineNumber + " - " + parser.Titlelize(strings.TrimSpace(name.Text()))
 
-		saveStatus(db, lineName, parser.ToUtf8(status), cptmSource)
+		saveStatus(db, lineName, status, cptmSource)
 	})
 }
 
@@ -116,4 +116,8 @@ func saveStatus(db database.MongoDB, lineName, status string, source models.Sour
 	parser.Log.Info("-- Created Status to " + lineName)
 	parser.Log.Info("Status: " + status)
 	parser.Log.Info("------")
+
+	if uri == "linha11coral" {
+		saveStatus(db, "Linha 11-Coral-Expresso", status, source)
+	}
 }
