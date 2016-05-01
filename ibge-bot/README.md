@@ -1,3 +1,3 @@
 # IBGE Bot
 
-Join us on IRC at #databr to chat with other databr maintainers! ([web access](http://webchat.freenode.net/?channels=databr))
+Junte-se a nós no Slack [clicando aqui](http://databr.herokuapp.com/), venha conversar com os mantenedores e interessados em API e dados publicos 
