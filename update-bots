@@ -1,0 +1,12 @@
+#!/bin/bash
+
+git fetch --all
+
+git subtree pull --prefix=ibge-bot/ ibge-bot master --squash
+git subtree pull --prefix=metrosp-bot/ metrosp-bot master --squash
+git subtree pull --prefix=parlimentarian-bot/ parliamentarian-bot master --squash
+
+git push origin master
+git subtree push --prefix=ibge-bot/ --squash ibge-bot master
+git subtree push --prefix=metrosp-bot/ --squash metrosp-bot master
+git subtree push --prefix=parlimentarian-bot/ --squash parliamentarian-bot master
